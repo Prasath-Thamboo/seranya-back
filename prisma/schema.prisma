@@ -1,0 +1,165 @@
+// spectral5.0/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                      Int        @id @default(autoincrement())
+  name                    String?
+  lastName                String?
+  address                 String?
+  email                   String     @unique
+  phone                   String?
+  status                  String
+  pseudo                  String     @unique
+  password                String
+  role                    Role       @default(EDITOR)
+  createdAt               DateTime   @default(now())
+  updatedAt               DateTime   @updatedAt
+  resetToken              String?    // Token de réinitialisation de mot de passe
+  resetTokenExpiry        DateTime?  // Expiration du token de réinitialisation
+  confirmationToken       String?    // Token de confirmation d'email
+  confirmationTokenExpiry DateTime?  // Date d'expiration du token de confirmation
+  units                   UserUnit[]
+  uploads                 Upload[]   @relation("UserUploads")
+  comments                Comment[]
+  stripeSubscriptionId    String?
+  isSubscribed            Boolean?   @default(false)
+}
+
+model Unit {
+  id          Int        @id @default(autoincrement())
+  title       String
+  intro       String
+  subtitle    String
+  story       String
+  bio         String
+  quote       String?    // Ajout de la propriété quote
+  color       String?    // Ajout de la propriété color
+  isPublished Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  type        UnitType
+  users       UserUnit[]
+  uploads     Upload[]   @relation("UnitUploads")
+  comments    Comment[]
+  classes     Class[]    @relation("UnitClasses")
+  postUnits   PostUnit[]
+}
+
+model Class {
+  id          String     @id @default(uuid())
+  title       String
+  intro       String
+  subtitle    String
+  story       String
+  bio         String
+  quote       String?    // Ajout de la propriété quote
+  isPublished Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  uploads     Upload[]   @relation("ClassUploads")
+  units       Unit[]     @relation("UnitClasses")
+  color       String?
+  postClasses PostClass[]
+  comments    Comment[]  // Correction : Le modèle `Class` doit avoir un champ `comments`
+}
+
+model Post {
+  id          Int         @id @default(autoincrement())
+  title       String
+  intro       String
+  subtitle    String
+  content     String
+  color       String?
+  isPublished Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  type        PostType
+  uploads     Upload[]    @relation("PostUploads")
+  comments    Comment[]
+  postUnits   PostUnit[]
+  postClasses PostClass[]
+}
+
+model PostUnit {
+  postId Int
+  unitId Int
+  post   Post @relation(fields: [postId], references: [id])
+  unit   Unit @relation(fields: [unitId], references: [id])
+  @@id([postId, unitId])
+}
+
+model PostClass {
+  postId  Int
+  classId String
+  post    Post  @relation(fields: [postId], references: [id])
+  class   Class @relation(fields: [classId], references: [id])
+  @@id([postId, classId])
+}
+
+model UserUnit {
+  userId Int
+  unitId Int
+  user   User @relation(fields: [userId], references: [id])
+  unit   Unit @relation(fields: [unitId], references: [id])
+  @@id([userId, unitId])
+}
+
+model Upload {
+  id        Int        @id @default(autoincrement())
+  path      String
+  type      UploadType
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  users     User[]     @relation("UserUploads")
+  units     Unit[]     @relation("UnitUploads")
+  classes   Class[]    @relation("ClassUploads")
+  posts     Post[]     @relation("PostUploads")
+}
+
+model Comment {
+  id        Int       @id @default(autoincrement())
+  content   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  userId    Int
+  unitId    Int?
+  classId   String?
+  postId    Int?
+  user      User      @relation(fields: [userId], references: [id])
+  unit      Unit?     @relation(fields: [unitId], references: [id])
+  class     Class?    @relation(fields: [classId], references: [id])
+  post      Post?     @relation(fields: [postId], references: [id])
+}
+
+enum UploadType {
+  GALERY
+  PROFILEIMAGE
+  HEADERIMAGE
+  FOOTERIMAGE
+}
+
+enum Role {
+  USER
+  EDITOR
+  ADMIN
+}
+
+enum UnitType {
+  UNIT
+  CHAMPION
+}
+
+enum PostType {
+  SCIENCE
+  PHILO
+  UNIVERS
+  REGION // Ajout de la valeur REGION
+}

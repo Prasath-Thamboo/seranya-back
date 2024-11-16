@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    command: npm run start:prod # Modifier pour exécuter le mode production
+    environment:
+      - NODE_ENV=production # Indiquer que l'application tourne en mode production
+      - DATABASE_URL="postgresql://dbmasteruser:xo2%7BE4MmR%7BKr1%2Ct%5E%28Wb-G6%25d.%3F.%5D69s%7E@ls-acdb02fb3e60058450e9eab27ffebebf6730de7b.c7wk4ie6iegq.eu-west-3.rds.amazonaws.com:5432/your_database_name"
+      - AWS_ACCESS_KEY_ID=AKIA5CBGTWC3UWGLSA7F
+      - AWS_SECRET_ACCESS_KEY=O0F0t8K0OHyyzE9Wbt3MV0iVRGKnW33BVhV8HBGk
+      - AWS_REGION=eu-north-1
+      - AWS_S3_BUCKET_NAME=seranya
+      - AWS_S3_REGION=eu-north-1
+      - EMAIL_FROM=spectral5.0.95@gmail.com
+      - CONTACT_EMAIL_TO=spectralknight2.0@gmail.com
+      - MAILTRAP_HOST=sandbox.smtp.mailtrap.io
+      - MAILTRAP_PORT=2525
+      - MAILGUN_API_KEY=05eaf035a3d41d9000ca47ad6a1a4354-911539ec-fa5a7295
+      - MAILGUN_DOMAIN=sandboxc5b7b636ac9c4bc1ac49e10778978a8d.mailgun.org
+      - JWT_SECRET=yourSuperSecretKey123
+      - JWT_EXPIRATION_TIME=3600
+      - FRONTEND_DEV_URL=http://localhost:3000/auth/resetPassword
+      - FRONTEND_PROD_URL=https://www.spectralunivers.com/auth/resetPassword
+      - FRONTEND_URL=https://www.spectralunivers.com/auth/resetPassword
+      - BACKEND_DEV_URL=http://localhost:5000
+      - BACKEND_PROD_URL=https://api.spectralunivers.com
+      - STRIPE_SECRET_KEY=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
+      - STRIPE_WEBHOOK_SECRET=whsec_oQVm4kCuzMEArZhPvL6hBAl54J5ciz0z
+
