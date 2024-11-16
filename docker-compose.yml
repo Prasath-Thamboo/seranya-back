@@ -32,6 +32,6 @@ services:
       - FRONTEND_URL=https://www.spectralunivers.com/auth/resetPassword
       - BACKEND_DEV_URL=http://localhost:5000
       - BACKEND_PROD_URL=https://api.spectralunivers.com
-      - STRIPE_SECRET_KEY=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
-      - STRIPE_WEBHOOK_SECRET=whsec_oQVm4kCuzMEArZhPvL6hBAl54J5ciz0z
+      - STRIPE_SECRET_KEY=
+      - STRIPE_WEBHOOK_SECRET=
 

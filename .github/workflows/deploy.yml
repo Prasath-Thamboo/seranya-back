@@ -20,15 +20,15 @@ jobs:
 
       - name: Create directory on Lightsail
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@13.37.224.161 "mkdir -p /home/ubuntu/spectralAPI"
+          ssh -o StrictHostKeyChecking=no ubuntu@15.237.252.79 "mkdir -p /home/ubuntu/spectralAPI"
 
       - name: Copy files to Lightsail
         run: |
-          scp -o StrictHostKeyChecking=no -r * ubuntu@13.37.224.161:/home/ubuntu/spectralAPI/
+          scp -o StrictHostKeyChecking=no -r * ubuntu@15.237.252.79:/home/ubuntu/spectralAPI/
 
       - name: SSH into Lightsail and deploy
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@13.37.224.161 << 'EOF'
+          ssh -o StrictHostKeyChecking=no ubuntu@15.237.252.79 <<EOF
           cd /home/ubuntu/spectralAPI
           sudo docker build -t spectral-api .
           sudo docker stop spectral-api || true
