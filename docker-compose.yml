@@ -28,10 +28,10 @@ services:
       - JWT_SECRET=yourSuperSecretKey123
       - JWT_EXPIRATION_TIME=3600
       - FRONTEND_DEV_URL=http://localhost:3000/auth/resetPassword
-      - FRONTEND_PROD_URL=https://www.spectralunivers.com/auth/resetPassword
-      - FRONTEND_URL=https://www.spectralunivers.com/auth/resetPassword
+      - FRONTEND_PROD_URL=https://seranya.fr/auth/resetPassword
+      - FRONTEND_URL=https://seranya.fr/auth/resetPassword
       - BACKEND_DEV_URL=http://localhost:5000
-      - BACKEND_PROD_URL=https://api.spectralunivers.com
+      - BACKEND_PROD_URL=http://15.237.252.79:5000
       - STRIPE_SECRET_KEY=
       - STRIPE_WEBHOOK_SECRET=
 
