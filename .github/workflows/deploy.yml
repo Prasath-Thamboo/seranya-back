@@ -20,18 +20,18 @@ jobs:
 
       - name: Create directory on Lightsail
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@15.237.252.79 "mkdir -p /home/ubuntu/spectralAPI"
+          ssh -o StrictHostKeyChecking=no ubuntu@15.237.252.79 "mkdir -p /home/ubuntu/seranyaAPI"
 
       - name: Copy files to Lightsail
         run: |
-          scp -o StrictHostKeyChecking=no -r * ubuntu@15.237.252.79:/home/ubuntu/spectralAPI/
+          scp -o StrictHostKeyChecking=no -r * ubuntu@15.237.252.79:/home/ubuntu/seranyaAPI/
 
       - name: SSH into Lightsail and deploy
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@15.237.252.79 <<EOF
-          cd /home/ubuntu/spectralAPI
-          sudo docker build -t spectral-api .
-          sudo docker stop spectral-api || true
-          sudo docker rm spectral-api || true
-          sudo docker run -d -p 5000:5000 --name spectral-api spectral-api
+          cd /home/ubuntu/seranyaAPI
+          sudo docker build -t seranya-api .
+          sudo docker stop seranya-api || true
+          sudo docker rm seranya-api || true
+          sudo docker run -d -p 5000:5000 --name seranya-api seranya-api
           EOF
