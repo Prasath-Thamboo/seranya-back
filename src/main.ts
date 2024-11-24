@@ -23,11 +23,8 @@ async function bootstrap() {
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
   app.enableCors({
-    origin: '', // Autoriser toutes les origines (À utiliser uniquement pour les tests)
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: 'Content-Type, Authorization, Origin, Accept',
-    credentials: false, // Désactiver les credentials si origin est ''
-    optionsSuccessStatus: 204,
+    origin: '*', // Allowing all origins
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   });
 
   // Servir les fichiers statiques
