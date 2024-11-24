@@ -23,9 +23,11 @@ async function bootstrap() {
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
   app.enableCors({
-    origin: 'https://seranya.fr', // Autorisez uniquement votre domaine frontend
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Les méthodes HTTP autorisées
-    credentials: true, // Si vous gérez des cookies ou des sessions
+    origin: '', // Autoriser toutes les origines (À utiliser uniquement pour les tests)
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type, Authorization, Origin, Accept',
+    credentials: false, // Désactiver les credentials si origin est ''
+    optionsSuccessStatus: 204,
   });
 
   // Servir les fichiers statiques
