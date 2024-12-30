@@ -20,7 +20,7 @@ jobs:
 
       - name: Create directory on Lightsail
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@15.237.252.79 "mkdir -p /home/ubuntu/spectralAPI"
+          ssh -o StrictHostKeyChecking=no ubuntu@15.237.197.200 "mkdir -p /home/ubuntu/spectralAPI"
 
       - name: Copy files to Lightsail
         run: |
