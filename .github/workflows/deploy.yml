@@ -28,7 +28,7 @@ jobs:
 
       - name: SSH into Lightsail and deploy
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@15.237.252.79 <<EOF
+          ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=240 -o StrictHostKeyChecking=no ubuntu@15.237.252.79 <<EOF
           cd /home/ubuntu/spectralAPI
           sudo docker build -t spectral-api .
           sudo docker stop spectral-api || true
