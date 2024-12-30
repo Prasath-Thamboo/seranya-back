@@ -22,12 +22,12 @@ async function bootstrap() {
   app.use(bodyParser.json({ limit: '50mb' })); // Increase the limit as needed (e.g., 50mb)
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
-// app.enableCors({
-//   origin: ['https://seranya.fr'],
-//   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-//   allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-//   credentials: true,
-// });
+app.enableCors({
+  origin: ['https://seranya.fr'],
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  credentials: true,
+});
 
 
   // Servir les fichiers statiques
