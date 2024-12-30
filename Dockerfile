@@ -1,5 +1,5 @@
 # Utiliser Node 18 Alpine
-FROM node:18-alpine
+FROM node:18
 
 # Installer la compatibilité C pour Alpine (utilisé par certains paquets natifs, ex. bcrypt)
 RUN apk add --no-cache libc6-compat
