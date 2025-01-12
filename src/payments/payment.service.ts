@@ -13,7 +13,7 @@ export class PaymentService {
       mode: 'subscription',
       line_items: [
         {
-          price: 'price_1PyshhDVy57BwoUTvRDqe44g', // Remplacez par votre price_id réel
+          price: 'price_1QgNdG06xDQj9QaRFH8S3cxr', // Remplacez par votre price_id réel
           quantity: 1,
         },
       ],
