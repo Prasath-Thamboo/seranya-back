@@ -12,6 +12,8 @@ export class WebhookController {
   constructor(private prisma: PrismaService) {}
 
   @Post('stripe')
+
+  //TESTEST
   async handleStripeWebhook(@Req() req: Request, @Res() res: Response) {
     const sig = req.headers['stripe-signature'] as string;
 
