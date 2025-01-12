@@ -19,32 +19,35 @@ export class WebhookController {
       const event = stripe.webhooks.constructEvent(
         req.body,
         sig,
-        process.env.STRIPE_WEBHOOK_SECRET as string, // Assurez-vous que ce secret est défini
+        process.env.STRIPE_WEBHOOK_SECRET as string,
       );
 
-      // Loggez l'événement pour vérifier
       console.log('Stripe event received:', event.type);
 
-      // Gestion des événements
-      if (event.type === 'checkout.session.completed') {
-        const session = event.data.object as Stripe.Checkout.Session;
+      switch (event.type) {
+        case 'checkout.session.completed': {
+          const session = event.data.object as Stripe.Checkout.Session;
 
-        console.log('Checkout session completed:', session);
+          if (!session.metadata || !session.metadata.userId) {
+            console.error('User ID is missing in metadata.');
+            return res.status(400).json({ error: 'User ID is missing in metadata' });
+          }
 
-        // Récupérer l'ID de l'abonnement créé
-        const subscriptionId = session.subscription as string;
+          const subscriptionId = session.subscription as string;
+          const userId = Number(session.metadata.userId);
 
-        // Assurez-vous que vous stockez cet ID d'abonnement dans votre base de données
-        const userId = session.metadata.userId;
+          await this.prisma.user.update({
+            where: { id: userId },
+            data: {
+              stripeSubscriptionId: subscriptionId,
+              isSubscribed: true,
+            },
+          });
 
-        // Sauvegarder l'ID de l'abonnement dans la base de données pour l'utilisateur
-        await this.prisma.user.update({
-          where: { id: Number(userId) },
-          data: {
-            stripeSubscriptionId: subscriptionId, // Ajoutez un champ dans votre modèle pour stocker l'ID de l'abonnement
-            isSubscribed: true, // Mettez à jour le statut de l'abonnement
-          },
-        });
+          break;
+        }
+        default:
+          console.log(`Unhandled event type: ${event.type}`);
       }
 
       res.json({ received: true });
