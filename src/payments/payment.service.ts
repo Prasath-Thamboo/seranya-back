@@ -28,7 +28,9 @@ export class PaymentService {
       return session.url;
     } catch (error) {
       console.error('Failed to create subscription session:', error);
-      throw new InternalServerErrorException('Failed to create subscription session');
+      throw new InternalServerErrorException(
+        'Failed to create subscription session',
+      );
     }
   }
 
