@@ -170,7 +170,7 @@ export class AuthService {
     // Choisir l'URL en fonction de l'environnement (production ou développement)
     const baseUrl =
       process.env.NODE_ENV === 'production'
-        ? 'https://www.spectralunivers.com'
+        ? 'https://www.seranya.fr'
         : 'http://localhost:3000';
 
     const resetUrl = `${baseUrl}/auth/resetPassword?token=${resetToken}`;

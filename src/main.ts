@@ -22,8 +22,13 @@ async function bootstrap() {
   app.use(bodyParser.json({ limit: '50mb' })); // Increase the limit as needed (e.g., 50mb)
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
+const allowedOrigins =
+  process.env.NODE_ENV === 'production'
+    ? ['https://seranya.fr']
+    : ['https://seranya.fr', 'http://localhost:3000', 'http://localhost:3001'];
+
 app.enableCors({
-  origin: ['https://seranya.fr'],
+  origin: allowedOrigins,
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   credentials: true,
