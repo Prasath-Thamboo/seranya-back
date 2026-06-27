@@ -42,7 +42,7 @@ export class ClassController {
   }
 
   @Post()
-  @Roles('ADMIN', 'EDITOR')
+  @Roles('ADMIN')
   @UseGuards(JwtAuthGuard, RoleGuard)
   @UseInterceptors(
     FileFieldsInterceptor(
@@ -86,7 +86,7 @@ export class ClassController {
   }
 
   @Patch(':id')
-  @Roles('ADMIN', 'EDITOR')
+  @Roles('ADMIN')
   @UseGuards(JwtAuthGuard, RoleGuard)
   @UseInterceptors(
     FileFieldsInterceptor(
@@ -133,7 +133,7 @@ export class ClassController {
   }
 
   @Delete(':id')
-  @Roles('ADMIN', 'EDITOR')
+  @Roles('ADMIN')
   @UseGuards(JwtAuthGuard, RoleGuard)
   async remove(@Param('id') id: string) {
     return this.classService.remove(id);

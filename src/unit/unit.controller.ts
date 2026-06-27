@@ -54,7 +54,7 @@ export class UnitController {
   }
 
   @Post()
-  @Roles('ADMIN', 'EDITOR')
+  @Roles('ADMIN')
   @UseGuards(JwtAuthGuard, RoleGuard)
   @UseInterceptors(
     FileFieldsInterceptor(
@@ -166,7 +166,7 @@ export class UnitController {
   }
 
   @Patch(':id')
-  @Roles('ADMIN', 'EDITOR')
+  @Roles('ADMIN')
   @UseGuards(JwtAuthGuard, RoleGuard)
   @UseInterceptors(
     FileFieldsInterceptor(
@@ -269,7 +269,7 @@ export class UnitController {
   }
 
   @Delete(':id')
-  @Roles('ADMIN', 'EDITOR')
+  @Roles('ADMIN')
   @UseGuards(JwtAuthGuard, RoleGuard)
   async remove(@Param('id') id: string) {
     try {
@@ -286,7 +286,7 @@ export class UnitController {
   }
 
   @Delete('gallery/:uploadId')
-  @Roles('ADMIN', 'EDITOR')
+  @Roles('ADMIN')
   @UseGuards(JwtAuthGuard, RoleGuard)
   async deleteGalleryImage(@Param('uploadId') uploadId: string) {
     try {

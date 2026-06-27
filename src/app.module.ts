@@ -16,6 +16,8 @@ import { ConfigModule } from '@nestjs/config';
 import { PaymentModule } from './payments/payment.module';
 import { WebhookController } from './payments/webhook.controller';
 import { FileModule } from './files/file.module';
+import { TutorialModule } from './tutorial/tutorial.module';
+import { DefinitionModule } from './definition/definition.module';
 
 @Module({
   imports: [
@@ -36,6 +38,8 @@ import { FileModule } from './files/file.module';
     AuthModule,
     PaymentModule,
     FileModule,
+    TutorialModule,
+    DefinitionModule,
   ],
   controllers: [AppController, WebhookController],
   providers: [MailerService, AppService, PrismaService],

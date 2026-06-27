@@ -1,23 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
-import { SESClient, SendRawEmailCommand } from '@aws-sdk/client-ses'; // Import du client SES v3
-import { passwordResetTemplate } from './templates/passwordResetTemplate'; // Import du template
+import { passwordResetTemplate } from './templates/passwordResetTemplate';
 
 @Injectable()
 export class MailerService {
   private transporter;
 
   constructor() {
-    const sesClient = new SESClient({
-      region: process.env.AWS_REGION, // Récupère la région depuis les variables d'environnement
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-      },
-    });
-
     this.transporter = nodemailer.createTransport({
-      SES: { ses: sesClient, aws: { SendRawEmailCommand } }, // Utilisation de SES v3
+      host: 'smtp.resend.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: 'resend',
+        pass: process.env.RESEND_API_KEY,
+      },
     });
   }
 
