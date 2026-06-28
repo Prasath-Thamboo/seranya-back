@@ -3,7 +3,6 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
-import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as bodyParser from 'body-parser';
 
@@ -12,32 +11,21 @@ async function bootstrap() {
     logger: ['error', 'warn', 'log', 'debug', 'verbose'],
   });
 
-  // Désactiver le bodyParser JSON pour les webhooks Stripe
   app.use('/webhook/stripe', bodyParser.raw({ type: 'application/json' }));
 
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new HttpExceptionFilter());
-  // Allow larger file uploads by increasing the body size limit
-  // Adjust body parser limits
-  app.use(bodyParser.json({ limit: '50mb' })); // Increase the limit as needed (e.g., 50mb)
-  app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
-const allowedOrigins =
-  process.env.NODE_ENV === 'production'
-    ? ['https://seranya.fr']
-    : ['https://seranya.fr', 'http://localhost:3000', 'http://localhost:3001'];
+  const allowedOrigins =
+    process.env.NODE_ENV === 'production'
+      ? ['https://seranya.fr']
+      : ['https://seranya.fr', 'http://localhost:3000', 'http://localhost:3001'];
 
-app.enableCors({
-  origin: allowedOrigins,
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-  credentials: true,
-});
-
-
-  // Servir les fichiers statiques
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
-    prefix: '/uploads',
+  app.enableCors({
+    origin: allowedOrigins,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    credentials: true,
   });
 
   const config = new DocumentBuilder()

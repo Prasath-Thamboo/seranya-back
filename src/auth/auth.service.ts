@@ -247,10 +247,11 @@ export class AuthService {
         address: true,
         phone: true,
         status: true,
+        profileImage: true,
         createdAt: true,
         updatedAt: true,
-        isSubscribed: true, // Ajout de isSubscribed
-        stripeSubscriptionId: true, // Ajout de stripeSubscriptionId
+        isSubscribed: true,
+        stripeSubscriptionId: true,
       },
     });
 
@@ -258,12 +259,6 @@ export class AuthService {
       throw new Error('User not found');
     }
 
-    // Construction du chemin de l'image de profil
-    const profileImagePath = `/uploads/users/${user.id}/ProfileImage.png`;
-
-    return {
-      ...user,
-      profileImage: profileImagePath, // Ajoute le chemin de l'image de profil
-    };
+    return user;
   }
 }

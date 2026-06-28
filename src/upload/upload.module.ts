@@ -1,14 +1,11 @@
 import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
-import { UploadService } from './upload.service';
+import { memoryStorage } from 'multer';
 
 @Module({
   imports: [
-    MulterModule.register({
-      dest: './uploads', // Répertoire où les fichiers seront stockés
-    }),
+    MulterModule.register({ storage: memoryStorage() }),
   ],
-  providers: [UploadService],
-  exports: [MulterModule, UploadService], // Exportez MulterModule pour l'utiliser dans d'autres modules
+  exports: [MulterModule],
 })
 export class UploadModule {}

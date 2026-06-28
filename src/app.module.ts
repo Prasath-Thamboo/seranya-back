@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
@@ -22,12 +20,8 @@ import { DefinitionModule } from './definition/definition.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true, // Makes the ConfigModule global
-      envFilePath: '.env', // Specifies the path to your .env file
-    }),
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'), // Path to the static files
-      serveRoot: '/uploads', // URL path where the files will be accessible
+      isGlobal: true,
+      envFilePath: '.env',
     }),
     UserModule,
     UnitModule,

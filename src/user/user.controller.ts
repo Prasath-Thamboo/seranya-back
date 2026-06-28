@@ -20,19 +20,10 @@ import {
   ApiConsumes,
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { v4 as uuidv4 } from 'uuid';
+import { memoryStorage } from 'multer';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/roles.decorator';
 import { RoleGuard } from '../auth/role.guard';
-
-const storage = diskStorage({
-  destination: './uploads/temp',
-  filename: (req, file, cb) => {
-    const uniqueSuffix = `${uuidv4()}-${file.originalname}`;
-    cb(null, uniqueSuffix);
-  },
-});
 
 @ApiTags('users')
 @Controller('users')
@@ -43,10 +34,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('ADMIN')
   @ApiOperation({ summary: 'Create a new user' })
-  @ApiResponse({
-    status: 201,
-    description: 'The user has been successfully created.',
-  })
+  @ApiResponse({ status: 201, description: 'The user has been successfully created.' })
   @ApiBody({ type: CreateUserDto })
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
@@ -72,13 +60,10 @@ export class UserController {
   @Roles('ADMIN')
   @ApiOperation({ summary: 'Update a user' })
   @ApiConsumes('multipart/form-data')
-  @ApiResponse({
-    status: 200,
-    description: 'The user has been successfully updated.',
-  })
+  @ApiResponse({ status: 200, description: 'The user has been successfully updated.' })
   @ApiResponse({ status: 404, description: 'User not found.' })
   @ApiBody({ type: UpdateUserDto })
-  @UseInterceptors(FileInterceptor('profileImage', { storage }))
+  @UseInterceptors(FileInterceptor('profileImage', { storage: memoryStorage() }))
   async update(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
@@ -91,10 +76,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('ADMIN')
   @ApiOperation({ summary: 'Delete a user' })
-  @ApiResponse({
-    status: 200,
-    description: 'The user has been successfully deleted.',
-  })
+  @ApiResponse({ status: 200, description: 'The user has been successfully deleted.' })
   @ApiResponse({ status: 404, description: 'User not found.' })
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);
@@ -110,10 +92,7 @@ export class UserController {
 
   @Post('reset-password')
   @ApiOperation({ summary: 'Reset user password' })
-  @ApiResponse({
-    status: 200,
-    description: 'Password has been successfully reset.',
-  })
+  @ApiResponse({ status: 200, description: 'Password has been successfully reset.' })
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     return this.userService.resetPassword(resetPasswordDto);
   }
@@ -122,13 +101,9 @@ export class UserController {
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('ADMIN')
   @ApiOperation({ summary: 'Send a simple email' })
-  @ApiResponse({
-    status: 200,
-    description: 'Email has been successfully sent.',
-  })
+  @ApiResponse({ status: 200, description: 'Email has been successfully sent.' })
   async sendEmail(
-    @Body()
-    { to, subject, text }: { to: string; subject: string; text: string },
+    @Body() { to, subject, text }: { to: string; subject: string; text: string },
   ) {
     await this.userService.send(to, subject, text);
     return { message: 'Email has been successfully sent.' };
