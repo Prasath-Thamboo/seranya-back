@@ -16,6 +16,7 @@ import { WebhookController } from './payments/webhook.controller';
 import { FileModule } from './files/file.module';
 import { TutorialModule } from './tutorial/tutorial.module';
 import { DefinitionModule } from './definition/definition.module';
+import { CommentModule } from './comment/comment.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { DefinitionModule } from './definition/definition.module';
     FileModule,
     TutorialModule,
     DefinitionModule,
+    CommentModule,
   ],
   controllers: [AppController, WebhookController],
   providers: [MailerService, AppService, PrismaService],

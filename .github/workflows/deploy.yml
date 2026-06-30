@@ -1,9 +1,7 @@
 name: Deploy to Lightsail
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch: # Déclenchement manuel uniquement (auto-deploy sur push désactivé)
 
 jobs:
   deploy:

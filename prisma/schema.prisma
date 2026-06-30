@@ -126,18 +126,20 @@ model Upload {
 }
 
 model Comment {
-  id        Int       @id @default(autoincrement())
-  content   String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  userId    Int
-  unitId    Int?
-  classId   String?
-  postId    Int?
-  user      User      @relation(fields: [userId], references: [id])
-  unit      Unit?     @relation(fields: [unitId], references: [id])
-  class     Class?    @relation(fields: [classId], references: [id])
-  post      Post?     @relation(fields: [postId], references: [id])
+  id         Int       @id @default(autoincrement())
+  content    String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  userId     Int
+  unitId     Int?
+  classId    String?
+  postId     Int?
+  tutorialId Int?
+  user       User      @relation(fields: [userId], references: [id])
+  unit       Unit?     @relation(fields: [unitId], references: [id])
+  class      Class?    @relation(fields: [classId], references: [id])
+  post       Post?     @relation(fields: [postId], references: [id])
+  tutorial   Tutorial? @relation(fields: [tutorialId], references: [id])
 }
 
 enum UploadType {
@@ -176,11 +178,12 @@ model Definition {
 }
 
 model Tutorial {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   title       String
   description String?
   videoUrl    String
-  isPublished Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isPublished Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  comments    Comment[]
 }
