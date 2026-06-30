@@ -76,8 +76,8 @@ model Post {
   id          Int         @id @default(autoincrement())
   title       String
   intro       String
-  subtitle    String
-  content     String
+  subtitle    String?
+  content     String?
   color       String?
   isPublished Boolean     @default(false)
   createdAt   DateTime    @default(now())
