@@ -551,21 +551,4 @@ export class UnitService {
     }
   }
 
-  // Nouvelle méthode pour récupérer tous les IDs des units
-  async getAllUnitIds(): Promise<number[]> {
-    try {
-      const units = await this.prisma.unit.findMany({
-        select: { id: true },
-      });
-      return units.map((unit) => unit.id);
-    } catch (error) {
-      this.logger.error(
-        'Erreur lors de la récupération des IDs des units',
-        error,
-      );
-      throw new InternalServerErrorException(
-        'Erreur lors de la récupération des IDs des units',
-      );
-    }
-  }
 }

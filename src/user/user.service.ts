@@ -41,6 +41,37 @@ export class UserService {
     return this.prisma.user.findUnique({ where: { email } });
   }
 
+  async isPseudoAvailable(pseudo: string, currentUserId: number): Promise<{ available: boolean }> {
+    const existing = await this.prisma.user.findFirst({
+      where: {
+        pseudo: { equals: pseudo, mode: 'insensitive' },
+        NOT: { id: currentUserId },
+      },
+    });
+    return { available: !existing };
+  }
+
+  validatePseudoFormat(pseudo: string): { valid: boolean; reason?: string } {
+    if (pseudo.length < 3)  return { valid: false, reason: 'Minimum 3 caractères.' };
+    if (pseudo.length > 20) return { valid: false, reason: 'Maximum 20 caractères.' };
+    if (!/^[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]$/.test(pseudo) && pseudo.length > 1) {
+      return { valid: false, reason: 'Commence et finit par une lettre ou un chiffre. Seuls _ et - sont autorisés au milieu.' };
+    }
+    if (/__|--/.test(pseudo)) return { valid: false, reason: 'Pas de caractères spéciaux consécutifs.' };
+
+    const normalized = pseudo.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const blocked = [
+      'connard','connasse','salope','pute','putain','enculé','encule','batard','bâtard',
+      'fdp','niquer','nique','pedé','pede','pedale','pedalo','fiotte','tapette','gouine',
+      'sexe','porno','porn','bite','couille','chatte','penis','hitler','nazi','negre',
+      'fuck','shit','bitch','whore','slut','nigger','faggot','cunt','asshole',
+    ];
+    const found = blocked.find((w) => normalized.includes(w.normalize('NFD').replace(/[̀-ͯ]/g, '')));
+    if (found) return { valid: false, reason: 'Ce pseudo contient un terme non autorisé.' };
+
+    return { valid: true };
+  }
+
   async update(
     id: number,
     updateUserDto: UpdateUserDto,

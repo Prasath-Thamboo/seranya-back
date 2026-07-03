@@ -492,21 +492,4 @@ export class ClassService {
     }
   }
 
-  // Nouvelle méthode pour récupérer tous les IDs des classes
-  async getAllClassIds(): Promise<string[]> {
-    try {
-      const classes = await this.prisma.class.findMany({
-        select: { id: true },
-      });
-      return classes.map((cls) => cls.id);
-    } catch (error) {
-      this.logger.error(
-        'Erreur lors de la récupération des IDs des classes',
-        error,
-      );
-      throw new InternalServerErrorException(
-        'Erreur lors de la récupération des IDs des classes',
-      );
-    }
-  }
 }
