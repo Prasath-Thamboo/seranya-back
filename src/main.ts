@@ -5,11 +5,17 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as bodyParser from 'body-parser';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: ['error', 'warn', 'log', 'debug', 'verbose'],
   });
+
+  // CSP désactivée par défaut : la CSP stricte de Helmet casse les scripts/styles
+  // inline chargés par Swagger UI sur /api. Les autres protections (HSTS,
+  // X-Frame-Options, X-Content-Type-Options, etc.) restent actives.
+  app.use(helmet({ contentSecurityPolicy: false }));
 
   app.use('/webhook/stripe', bodyParser.raw({ type: 'application/json' }));
 

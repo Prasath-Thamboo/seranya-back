@@ -21,6 +21,7 @@ import {
 import { ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
@@ -29,6 +30,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @UseInterceptors(FileInterceptor('profileImage'))
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: RegisterUserDto })
@@ -50,6 +52,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @ApiConsumes('application/x-www-form-urlencoded')
   @ApiBody({ type: LoginUserDto })
   async login(@Body() loginUserDto: LoginUserDto) {
@@ -89,6 +92,7 @@ export class AuthController {
   }
 
   @Post('generate-reset-token')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @ApiConsumes('application/x-www-form-urlencoded')
   async generateResetToken(@Body('email') email: string) {
     const resetToken = await this.authService.generateResetToken(email);

@@ -46,6 +46,8 @@ export class UserController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('ADMIN')
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'Return all users.' })
   findAll() {

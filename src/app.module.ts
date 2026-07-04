@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
@@ -24,6 +26,13 @@ import { CommentModule } from './comment/comment.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    ThrottlerModule.forRoot([
+      {
+        name: 'default',
+        ttl: 60000, // 1 minute
+        limit: 100, // 100 requêtes / minute / IP sur l'ensemble de l'API
+      },
+    ]),
     UserModule,
     UnitModule,
     ClassModule,
@@ -38,7 +47,12 @@ import { CommentModule } from './comment/comment.module';
     CommentModule,
   ],
   controllers: [AppController, WebhookController],
-  providers: [MailerService, AppService, PrismaService],
+  providers: [
+    MailerService,
+    AppService,
+    PrismaService,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
   exports: [MailerService],
 })
 export class AppModule {}

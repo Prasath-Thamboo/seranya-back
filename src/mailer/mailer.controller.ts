@@ -31,4 +31,21 @@ export class MailerController {
       throw new Error("Erreur lors de l'envoi du message.");
     }
   }
+
+  @Post('data-request')
+  async sendDataRequest(
+    @Body('name') name: string,
+    @Body('email') email: string,
+    @Body('requestType') requestType: string,
+    @Body('message') message: string,
+  ) {
+    try {
+      await this.mailerService.sendDataRequest(name, email, requestType, message);
+      Logger.log(`GDPR data request (${requestType}) sent from ${email}`);
+      return { message: 'Votre demande a été envoyée avec succès.' };
+    } catch (error) {
+      Logger.error('Failed to send GDPR data request:', error);
+      throw new Error("Erreur lors de l'envoi de votre demande.");
+    }
+  }
 }
