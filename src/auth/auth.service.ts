@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   NotFoundException,
+  ConflictException,
   Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -40,14 +41,29 @@ export class AuthService {
       status: 'verifie', // Définit le statut à "verifie" automatiquement
     };
 
-    const user = await this.prisma.user.create({ data: userData });
+    try {
+      const user = await this.prisma.user.create({ data: userData });
 
-    Logger.log(`Utilisateur créé et vérifié automatiquement: ${user.email}`);
+      Logger.log(`Utilisateur créé et vérifié automatiquement: ${user.email}`);
 
-    return {
-      message: 'Inscription réussie. Utilisateur vérifié automatiquement.',
-      user,
-    };
+      return {
+        message: 'Inscription réussie. Utilisateur vérifié automatiquement.',
+        user,
+      };
+    } catch (error) {
+      if (error.code === 'P2002') {
+        const field = error.meta?.target?.[0] ?? 'email';
+        Logger.warn(
+          `Tentative d'inscription refusée (${field} déjà utilisé): ${registerUserDto.email}`,
+        );
+        throw new ConflictException(
+          field === 'pseudo'
+            ? 'Ce pseudo est déjà utilisé.'
+            : 'Un compte existe déjà avec cet email.',
+        );
+      }
+      throw error;
+    }
   }
 
   // Confirmation de l'email via le token// Confirmation de l'email via le token
