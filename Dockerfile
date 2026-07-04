@@ -1,11 +1,5 @@
-# Utiliser Node 18 Alpine
+# Image Node 18 (Debian, glibc) — pas besoin de libc6-compat (spécifique Alpine/musl)
 FROM node:18
-
-# Installer la compatibilité C pour Alpine (utilisé par certains paquets natifs, ex. bcrypt)
-RUN apk add --no-cache libc6-compat
-
-# Installer le CLI NestJS globalement
-RUN npm install -g @nestjs/cli
 
 # Limiter la mémoire Node.js à 512 Mo (à ajuster selon tes besoins)
 ENV NODE_OPTIONS="--max-old-space-size=512"
@@ -16,8 +10,9 @@ WORKDIR /usr/src/app
 # Copier le fichier package.json et package-lock.json dans le répertoire de travail
 COPY package*.json ./
 
-# Installer uniquement les dépendances de production
-RUN npm install --only=production
+# Installer toutes les dépendances (devDependencies incluses : nécessaires pour
+# le CLI Prisma et la compilation TypeScript à l'étape suivante)
+RUN npm install
 
 # Copier le reste du code de l'application dans le répertoire de travail
 COPY . .
@@ -28,7 +23,11 @@ RUN npx prisma generate
 # Compiler l'application en production
 RUN npm run build
 
-# Exposer le port que l'application va utiliser
+# Ne garder que les dépendances de production dans l'image finale
+RUN npm prune --omit=dev
+
+# Exposer le port que l'application va utiliser (Render/Lightsail redéfinissent
+# PORT au besoin ; voir main.ts qui écoute sur process.env.PORT)
 EXPOSE 5000
 
 # Démarrer l'application en mode production

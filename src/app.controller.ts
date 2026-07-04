@@ -13,6 +13,11 @@ export class AppController {
     return this.appService.getHello();
   }
 
+  @Get('health')
+  health() {
+    return this.appService.getHealth();
+  }
+
   @Get('search')
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('ADMIN', 'EDITOR')

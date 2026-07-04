@@ -167,12 +167,7 @@ export class AuthService {
       data: { resetToken, resetTokenExpiry },
     });
 
-    // Choisir l'URL en fonction de l'environnement (production ou développement)
-    const baseUrl =
-      process.env.NODE_ENV === 'production'
-        ? 'https://www.seranya.fr'
-        : 'http://localhost:3000';
-
+    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     const resetUrl = `${baseUrl}/auth/resetPassword?token=${resetToken}`;
 
     // Utilisation du template d'email avec lien de réinitialisation

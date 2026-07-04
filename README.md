@@ -1,73 +1,115 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Seranya — Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API NestJS de Seranya, plateforme de yoga/méditation à univers fantastique. Gère l'authentification, le contenu (univers, unités, classes, tutoriels, articles), les commentaires, les uploads, les abonnements Stripe et l'envoi d'emails.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers onbb Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Stack
 
-## Description
+- [NestJS](https://nestjs.com/) 10 (Express)
+- [Prisma](https://www.prisma.io/) + PostgreSQL
+- Auth JWT (`@nestjs/passport`, `passport-jwt`)
+- [Cloudinary](https://cloudinary.com/) pour le stockage des médias
+- [Stripe](https://stripe.com/) pour les abonnements/paiements
+- [Resend](https://resend.com/) + Nodemailer pour les emails transactionnels
+- Swagger (`/api`) pour la documentation de l'API
+- Helmet, throttler (rate limiting), class-validator pour la sécurité et la validation
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Prérequis
+
+- Node.js 20+
+- Une base PostgreSQL accessible
 
 ## Installation
 
 ```bash
-$ npm install
+npm install
 ```
 
-## Running the app
+Copier `.env.example` en `.env` et renseigner les variables :
+
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | Chaîne de connexion PostgreSQL |
+| `JWT_SECRET`, `JWT_EXPIRATION_TIME` | Secret et durée de vie des tokens JWT |
+| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Identifiants Cloudinary (upload d'images) |
+| `RESEND_API_KEY`, `EMAIL_FROM`, `CONTACT_EMAIL_TO`, `DPO_EMAIL_TO` | Envoi d'emails (contact, RGPD) |
+| `FRONTEND_URL`, `BACKEND_DEV_URL`, `BACKEND_PROD_URL` | URLs utilisées pour le CORS et les liens dans les emails |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Paiements et abonnements Stripe |
+
+Puis générer le client Prisma et appliquer les migrations :
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npx prisma generate
+npx prisma migrate dev
 ```
 
-## Test
+## Lancer le projet
 
 ```bash
-# unit tests
-$ npm run test
+# développement (watch mode)
+npm run start:dev
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+# production
+npm run build
+npm run start:prod
 ```
 
-## Support
+L'API démarre par défaut sur `http://localhost:5000`. La documentation Swagger est disponible sur `/api`.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Tests
 
-## Stay in touch
+```bash
+npm run test        # tests unitaires
+npm run test:e2e    # tests end-to-end
+npm run test:cov    # couverture
+```
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Structure
 
-## License
+```
+src/
+├── auth/        # login, JWT, guards (rôles), stratégie passport
+├── user/        # gestion des utilisateurs
+├── unit/        # unités de l'univers Seranya
+├── class/       # classes rattachées aux unités
+├── tutorial/    # tutoriels
+├── post/        # articles/actualités
+├── comment/     # commentaires
+├── definition/  # entrées d'encyclopédie
+├── files/       # upload de fichiers (Cloudinary)
+├── payments/    # abonnements et paiements Stripe
+├── mailer/      # envoi d'emails (contact, RGPD, notifications)
+├── prisma/      # module Prisma (accès BDD)
+├── filters/     # filtres d'exception globaux
+└── main.ts      # bootstrap (Helmet, CORS, Swagger, pipes globaux)
+```
 
-Nest is [MIT licensed](LICENSE).
+## Déploiement (Render)
+
+Le backend est packagé en Docker (`Dockerfile`) et déployé sur [Render](https://render.com/) via le blueprint `render.yaml`.
+
+1. Sur Render : **New → Blueprint**, connecter le repo GitHub `seranya-back`. Render détecte `render.yaml` et propose de créer le service `seranya-back` (runtime Docker, plan gratuit, health check sur `/health`).
+2. Renseigner dans le dashboard les variables marquées `sync: false` dans `render.yaml` (secrets non versionnés) : `DATABASE_URL`, `JWT_SECRET`, `JWT_EXPIRATION_TIME`, `CLOUDINARY_*`, `RESEND_API_KEY`, `EMAIL_FROM`, `CONTACT_EMAIL_TO`, `DPO_EMAIL_TO`, `FRONTEND_URL` (URL Vercel du frontend), `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`. `PORT` est fourni automatiquement par Render (l'app écoute sur `process.env.PORT`, voir `main.ts`) — ne pas le définir manuellement.
+3. Chaque `git push` sur la branche par défaut déclenche un nouveau build + déploiement automatique (contrairement à l'ancien workflow Lightsail qui nécessitait un déclenchement SSH manuel).
+4. Le plan gratuit met le service en veille après ~15 min d'inactivité (redémarrage à froid ~30-50s sur la requête suivante) ; passer au plan payant dans le dashboard quand une disponibilité constante est nécessaire — aucun changement de code requis.
+5. Une fois le service en ligne, mettre à jour `NEXT_PUBLIC_API_URL_PROD` côté frontend avec l'URL Render, et la variable de repo `BACKEND_HEALTH_URL` (voir section Supervision ci-dessous) avec `https://<service>.onrender.com/health`.
+
+L'ancien déploiement Lightsail (`.github/workflows/deploy.yml`) reste disponible en repli tant que la migration Render n'est pas validée en conditions réelles ; à supprimer une fois la bascule confirmée.
+
+## Supervision / monitoring
+
+- `GET /health` : endpoint public de vérification de disponibilité. Renvoie `200 { status: 'ok', timestamp }` si l'API et la connexion à la base de données (Prisma) répondent, `503` sinon.
+- Un workflow GitHub Actions (`.github/workflows/uptime-monitor.yml`) interroge cet endpoint toutes les 15 minutes (`schedule` + déclenchement manuel via `workflow_dispatch`) et fait échouer le job en cas d'indisponibilité, ce qui déclenche la notification par email de GitHub sur l'exécution planifiée en échec.
+  - Variable de repo optionnelle `BACKEND_HEALTH_URL` : URL du endpoint `/health` à surveiller (par défaut, l'IP de l'instance Lightsail).
+  - Variable de repo optionnelle `FRONTEND_URL` : si renseignée, le workflow vérifie aussi la disponibilité du frontend (à définir une fois le nom de domaine en production actif).
+  - À configurer dans *Settings → Secrets and variables → Actions → Variables* du repo GitHub.
+
+## Sécurité
+
+- Helmet est activé, à l'exception de la CSP (`contentSecurityPolicy: false` dans `main.ts`) car une CSP stricte casse les assets inline de Swagger UI sur `/api`. Les autres en-têtes (HSTS, X-Frame-Options, X-Content-Type-Options...) restent actifs.
+- Rate limiting via `@nestjs/throttler`.
+- Validation des entrées via `class-validator`/`class-transformer` sur tous les DTO.
+- Rôles utilisateurs (`role.guard.ts`, `roles.decorator.ts`) pour restreindre les routes d'administration.
+
+## Licence
+
+Projet privé (`UNLICENSED`).

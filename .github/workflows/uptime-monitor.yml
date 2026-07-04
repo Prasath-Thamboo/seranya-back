@@ -1,0 +1,28 @@
+name: Uptime monitoring
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      BACKEND_HEALTH_URL: ${{ vars.BACKEND_HEALTH_URL }}
+      FRONTEND_URL: ${{ vars.FRONTEND_URL }}
+    steps:
+      - name: Check backend health
+        run: |
+          URL="${BACKEND_HEALTH_URL:-http://15.237.197.200:5000/health}"
+          echo "Checking backend: $URL"
+          curl --fail --silent --show-error --max-time 10 "$URL"
+
+      - name: Check frontend availability
+        run: |
+          if [ -z "$FRONTEND_URL" ]; then
+            echo "FRONTEND_URL variable not set, skipping frontend check."
+            exit 0
+          fi
+          echo "Checking frontend: $FRONTEND_URL"
+          curl --fail --silent --show-error --max-time 10 "$FRONTEND_URL"
