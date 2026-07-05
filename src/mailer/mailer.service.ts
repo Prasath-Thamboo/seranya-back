@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
-import { passwordResetTemplate } from './templates/passwordResetTemplate';
 
 @Injectable()
 export class MailerService {
@@ -34,21 +33,6 @@ export class MailerService {
       Logger.error('Error sending email:', error.stack);
       throw new Error('Failed to send email');
     }
-  }
-
-  // Fonction pour envoyer le mail de réinitialisation du mot de passe
-  async sendPasswordResetEmail(to: string, resetToken: string) {
-    const resetUrl = `${process.env.FRONTEND_URL}/resetPassword?token=${resetToken}`;
-
-    // Utilisation du template avec le lien de réinitialisation
-    const htmlContent = passwordResetTemplate(resetUrl);
-
-    await this.sendMail(
-      to,
-      'Réinitialisation de votre mot de passe',
-      `Cliquez sur le bouton ci-dessous pour réinitialiser votre mot de passe.`,
-      htmlContent, // Utilisation du contenu HTML
-    );
   }
 
   async sendConfirmationEmail(to: string, confirmationUrl: string) {

@@ -1,7 +1,6 @@
 import {
   Injectable,
   UnauthorizedException,
-  NotFoundException,
   ConflictException,
   Logger,
 } from '@nestjs/common';
@@ -33,23 +32,23 @@ export class AuthService {
   async register(registerUserDto: RegisterUserDto) {
     const hashedPassword = await bcrypt.hash(registerUserDto.password, 10);
 
+    const confirmationToken = uuidv4();
+    const confirmationTokenExpiry = new Date();
+    confirmationTokenExpiry.setHours(confirmationTokenExpiry.getHours() + 24); // valide 24h
+
     const userData: Prisma.UserCreateInput = {
       email: registerUserDto.email,
       password: hashedPassword,
       pseudo: registerUserDto.pseudo,
       role: registerUserDto.role || 'USER',
-      status: 'verifie', // Définit le statut à "verifie" automatiquement
+      status: 'en_attente',
+      confirmationToken,
+      confirmationTokenExpiry,
     };
 
+    let user;
     try {
-      const user = await this.prisma.user.create({ data: userData });
-
-      Logger.log(`Utilisateur créé et vérifié automatiquement: ${user.email}`);
-
-      return {
-        message: 'Inscription réussie. Utilisateur vérifié automatiquement.',
-        user,
-      };
+      user = await this.prisma.user.create({ data: userData });
     } catch (error) {
       if (error.code === 'P2002') {
         const field = error.meta?.target?.[0] ?? 'email';
@@ -64,6 +63,29 @@ export class AuthService {
       }
       throw error;
     }
+
+    // L'envoi de l'email est isolé de la création du compte : une panne du
+    // fournisseur mail (ex. Resend sans domaine vérifié) ne doit pas faire
+    // échouer l'inscription alors que le compte existe déjà en base.
+    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const confirmationUrl = `${baseUrl}/auth/confirm?token=${confirmationToken}`;
+    let emailSent = true;
+    try {
+      await this.mailerService.sendConfirmationEmail(user.email, confirmationUrl);
+      Logger.log(`Utilisateur créé, email de confirmation envoyé à: ${user.email}`);
+    } catch (error) {
+      emailSent = false;
+      Logger.error(
+        `Utilisateur ${user.email} créé mais l'envoi de l'email de confirmation a échoué: ${error.message}`,
+      );
+    }
+
+    return {
+      message: emailSent
+        ? 'Inscription réussie. Un email de confirmation a été envoyé.'
+        : "Inscription réussie, mais l'email de confirmation n'a pas pu être envoyé. Contactez le support pour activer votre compte.",
+      user,
+    };
   }
 
   // Confirmation de l'email via le token// Confirmation de l'email via le token
@@ -165,13 +187,13 @@ export class AuthService {
   }
 
   // Générer un token de réinitialisation de mot de passe
-  async generateResetToken(email: string): Promise<string> {
+  async generateResetToken(email: string): Promise<void> {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
     if (!user) {
-      throw new NotFoundException(
-        'If this email is registered, a reset link will be sent.',
-      );
+      // Ne pas révéler si l'email est enregistré ou non (anti-énumération de comptes).
+      Logger.warn(`Demande de réinitialisation pour un email inconnu: ${email}`);
+      return;
     }
 
     const resetToken = uuidv4();
@@ -190,11 +212,9 @@ export class AuthService {
     await this.mailerService.sendMail(
       user.email,
       'Réinitialisation de votre mot de passe',
-      `Votre token de réinitialisation de mot de passe est : ${resetToken}.`,
+      `Cliquez sur ce lien pour réinitialiser votre mot de passe : ${resetUrl}`,
       passwordResetTemplate(resetUrl), // Utilisation du template HTML
     );
-
-    return resetToken;
   }
 
   async resetPassword(resetPasswordDto: ResetPasswordDto) {

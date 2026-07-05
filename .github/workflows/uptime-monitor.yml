@@ -14,9 +14,11 @@ jobs:
     steps:
       - name: Check backend health
         run: |
-          URL="${BACKEND_HEALTH_URL:-http://15.237.197.200:5000/health}"
+          URL="${BACKEND_HEALTH_URL:-https://seranya-back.onrender.com/health}"
           echo "Checking backend: $URL"
-          curl --fail --silent --show-error --max-time 10 "$URL"
+          # max-time à 60s : le plan gratuit Render met le service en veille après
+          # inactivité, un cold start peut prendre 30-50s sur la première requête.
+          curl --fail --silent --show-error --max-time 60 "$URL"
 
       - name: Check frontend availability
         run: |

@@ -85,22 +85,21 @@ src/
 
 ## Déploiement (Render)
 
-Le backend est packagé en Docker (`Dockerfile`) et déployé sur [Render](https://render.com/) via le blueprint `render.yaml`.
+Le backend est packagé en Docker (`Dockerfile`) et déployé sur [Render](https://render.com/) via le blueprint `render.yaml`. **En production :** `https://seranya-back.onrender.com`.
 
 1. Sur Render : **New → Blueprint**, connecter le repo GitHub `seranya-back`. Render détecte `render.yaml` et propose de créer le service `seranya-back` (runtime Docker, plan gratuit, health check sur `/health`).
-2. Renseigner dans le dashboard les variables marquées `sync: false` dans `render.yaml` (secrets non versionnés) : `DATABASE_URL`, `JWT_SECRET`, `JWT_EXPIRATION_TIME`, `CLOUDINARY_*`, `RESEND_API_KEY`, `EMAIL_FROM`, `CONTACT_EMAIL_TO`, `DPO_EMAIL_TO`, `FRONTEND_URL` (URL Vercel du frontend), `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`. `PORT` est fourni automatiquement par Render (l'app écoute sur `process.env.PORT`, voir `main.ts`) — ne pas le définir manuellement.
-3. Chaque `git push` sur la branche par défaut déclenche un nouveau build + déploiement automatique (contrairement à l'ancien workflow Lightsail qui nécessitait un déclenchement SSH manuel).
+2. Renseigner dans le dashboard les variables marquées `sync: false` dans `render.yaml` (secrets non versionnés) : `DATABASE_URL`, `JWT_SECRET`, `JWT_EXPIRATION_TIME`, `CLOUDINARY_*`, `RESEND_API_KEY`, `EMAIL_FROM`, `CONTACT_EMAIL_TO`, `DPO_EMAIL_TO`, `FRONTEND_URL` (origine exacte du frontend Vercel, **sans slash final** — sinon le CORS de `main.ts` rejette toutes les requêtes), `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`. `PORT` est fourni automatiquement par Render (l'app écoute sur `process.env.PORT`, voir `main.ts`) — ne pas le définir manuellement.
+3. Chaque `git push` sur la branche par défaut déclenche un nouveau build + déploiement automatique.
 4. Le plan gratuit met le service en veille après ~15 min d'inactivité (redémarrage à froid ~30-50s sur la requête suivante) ; passer au plan payant dans le dashboard quand une disponibilité constante est nécessaire — aucun changement de code requis.
-5. Une fois le service en ligne, mettre à jour `NEXT_PUBLIC_API_URL_PROD` côté frontend avec l'URL Render, et la variable de repo `BACKEND_HEALTH_URL` (voir section Supervision ci-dessous) avec `https://<service>.onrender.com/health`.
 
-L'ancien déploiement Lightsail (`.github/workflows/deploy.yml`) reste disponible en repli tant que la migration Render n'est pas validée en conditions réelles ; à supprimer une fois la bascule confirmée.
+L'ancien déploiement Lightsail est abandonné ; `.github/workflows/deploy.yml` est obsolète et peut être supprimé.
 
 ## Supervision / monitoring
 
 - `GET /health` : endpoint public de vérification de disponibilité. Renvoie `200 { status: 'ok', timestamp }` si l'API et la connexion à la base de données (Prisma) répondent, `503` sinon.
-- Un workflow GitHub Actions (`.github/workflows/uptime-monitor.yml`) interroge cet endpoint toutes les 15 minutes (`schedule` + déclenchement manuel via `workflow_dispatch`) et fait échouer le job en cas d'indisponibilité, ce qui déclenche la notification par email de GitHub sur l'exécution planifiée en échec.
-  - Variable de repo optionnelle `BACKEND_HEALTH_URL` : URL du endpoint `/health` à surveiller (par défaut, l'IP de l'instance Lightsail).
-  - Variable de repo optionnelle `FRONTEND_URL` : si renseignée, le workflow vérifie aussi la disponibilité du frontend (à définir une fois le nom de domaine en production actif).
+- Un workflow GitHub Actions (`.github/workflows/uptime-monitor.yml`) interroge `https://seranya-back.onrender.com/health` toutes les 15 minutes (`schedule` + déclenchement manuel via `workflow_dispatch`, timeout 60s pour absorber un cold start du plan gratuit) et fait échouer le job en cas d'indisponibilité, ce qui déclenche la notification par email de GitHub sur l'exécution planifiée en échec.
+  - Variable de repo optionnelle `BACKEND_HEALTH_URL` : pour surveiller une autre URL que celle par défaut.
+  - Variable de repo optionnelle `FRONTEND_URL` : si renseignée, le workflow vérifie aussi la disponibilité du frontend.
   - À configurer dans *Settings → Secrets and variables → Actions → Variables* du repo GitHub.
 
 ## Sécurité

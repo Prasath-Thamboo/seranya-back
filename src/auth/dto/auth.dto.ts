@@ -8,6 +8,7 @@ import {
   IsString,
   MinLength,
 } from 'class-validator';
+import { IsAllowedEmailDomain } from '../validators/is-allowed-email-domain.validator';
 
 export class RegisterUserDto {
   @ApiProperty({ description: "Nom de l'utilisateur", required: false })
@@ -26,6 +27,7 @@ export class RegisterUserDto {
   @ApiProperty({ description: "Email de l'utilisateur" })
   @IsEmail()
   @IsNotEmpty()
+  @IsAllowedEmailDomain()
   email: string;
 
   @ApiProperty({ description: "Mot de passe de l'utilisateur" })
@@ -37,14 +39,6 @@ export class RegisterUserDto {
   @IsOptional()
   @IsString()
   address?: string;
-
-  @ApiProperty({
-    description: "Numéro de téléphone de l'utilisateur",
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  phone?: string;
 
   @ApiProperty({
     description: "Statut de l'utilisateur",
@@ -84,11 +78,6 @@ export class LoginUserDto {
 }
 
 export class ResetPasswordDto {
-  @ApiProperty({ description: "Email de l'utilisateur" })
-  @IsEmail()
-  @IsNotEmpty()
-  email: string;
-
   @ApiProperty({ description: "Nouveau mot de passe de l'utilisateur" })
   @IsString()
   @MinLength(8)

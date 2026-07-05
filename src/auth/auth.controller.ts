@@ -35,20 +35,7 @@ export class AuthController {
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: RegisterUserDto })
   async register(@Body() registerUserDto: RegisterUserDto) {
-    const { user } = await this.authService.register(registerUserDto);
-
-    const baseUrl =
-      process.env.NODE_ENV === 'production'
-        ? 'https://www.spectralunivers.com'
-        : 'http://localhost:3000';
-
-    const confirmationUrl = `${baseUrl}/auth/confirm?token=${user.confirmationToken}`;
-    Logger.debug(`Confirmation URL générée : ${confirmationUrl}`);
-
-    return {
-      message: 'Un email de confirmation a été envoyé.',
-      user,
-    };
+    return this.authService.register(registerUserDto);
   }
 
   @Post('login')
@@ -93,18 +80,15 @@ export class AuthController {
 
   @Post('generate-reset-token')
   @Throttle({ default: { limit: 5, ttl: 60000 } })
-  @ApiConsumes('application/x-www-form-urlencoded')
   async generateResetToken(@Body('email') email: string) {
-    const resetToken = await this.authService.generateResetToken(email);
+    await this.authService.generateResetToken(email);
     return {
       message:
-        'Reset token generated successfully. Check your email for the link to reset your password.',
-      resetToken,
+        'Si cet email est enregistré, un lien de réinitialisation vient de lui être envoyé.',
     };
   }
 
   @Post('reset-password')
-  @ApiConsumes('application/x-www-form-urlencoded')
   @ApiBody({ type: ResetPasswordDto })
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     const result = await this.authService.resetPassword(resetPasswordDto);
