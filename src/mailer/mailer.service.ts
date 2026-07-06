@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
+import { emailChangeTemplate } from './templates/emailChangeTemplate';
 
 @Injectable()
 export class MailerService {
@@ -48,6 +49,15 @@ export class MailerService {
       'Veuillez confirmer votre inscription en cliquant sur le lien suivant : ' +
         confirmationUrl,
       htmlContent,
+    );
+  }
+
+  async sendEmailChangeConfirmation(to: string, confirmUrl: string) {
+    await this.sendMail(
+      to,
+      'Confirmez votre nouvelle adresse email',
+      `Cliquez sur ce lien pour confirmer votre nouvelle adresse email : ${confirmUrl}`,
+      emailChangeTemplate(confirmUrl),
     );
   }
 

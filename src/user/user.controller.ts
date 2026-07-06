@@ -67,6 +67,13 @@ export class UserController {
     return this.userService.isPseudoAvailable(pseudo, req.user.id);
   }
 
+  @Get('confirm-email-change')
+  @ApiOperation({ summary: 'Confirm an email change via token' })
+  async confirmEmailChange(@Query('token') token: string) {
+    const user = await this.userService.confirmEmailChange(token);
+    return { message: 'Adresse email mise à jour avec succès.', user };
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a user by ID' })
   @ApiResponse({ status: 200, description: 'Return a user.' })
@@ -96,6 +103,18 @@ export class UserController {
     }
 
     return this.userService.update(req.user.id, { name, lastName, pseudo }, profileImage);
+  }
+
+  @Post('me/change-email')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Request an email change (sends a confirmation link to the new address)' })
+  async requestEmailChange(
+    @Req() req: Request & { user: { id: number } },
+    @Body('newEmail') newEmail: string,
+  ) {
+    if (!newEmail) throw new BadRequestException('Adresse email manquante.');
+    await this.userService.requestEmailChange(req.user.id, newEmail);
+    return { message: 'Un email de confirmation a été envoyé à la nouvelle adresse.' };
   }
 
   @Put(':id')

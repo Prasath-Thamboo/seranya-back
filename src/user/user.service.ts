@@ -1,4 +1,10 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  UnauthorizedException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto, UpdateUserDto, ResetPasswordDto } from './dto/user.dto';
 import * as bcrypt from 'bcrypt';
@@ -139,6 +145,58 @@ export class UserService {
     return this.prisma.user.update({
       where: { email },
       data: { password: hashedPassword, resetToken: null, resetTokenExpiry: null },
+    });
+  }
+
+  async requestEmailChange(userId: number, newEmail: string): Promise<void> {
+    const current = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!current) throw new Error('User not found');
+
+    if (newEmail === current.email) {
+      throw new BadRequestException('C\'est déjà votre adresse email actuelle.');
+    }
+
+    const existing = await this.prisma.user.findUnique({ where: { email: newEmail } });
+    if (existing) throw new ConflictException('Cet email est déjà utilisé.');
+
+    const emailChangeToken = uuidv4();
+    const emailChangeTokenExpiry = new Date();
+    emailChangeTokenExpiry.setHours(emailChangeTokenExpiry.getHours() + 1); // valide 1h
+
+    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const confirmUrl = `${baseUrl}/auth/confirmEmailChange?token=${emailChangeToken}`;
+
+    // On envoie d'abord l'email : si l'envoi échoue, on ne veut pas laisser le
+    // compte dans un état "changement en attente" que l'utilisateur n'a aucun
+    // moyen de confirmer.
+    await this.mailerService.sendEmailChangeConfirmation(newEmail, confirmUrl);
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { pendingEmail: newEmail, emailChangeToken, emailChangeTokenExpiry },
+    });
+  }
+
+  async confirmEmailChange(token: string) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        emailChangeToken: token,
+        emailChangeTokenExpiry: { gte: new Date() },
+      },
+    });
+
+    if (!user || !user.pendingEmail) {
+      throw new UnauthorizedException('Token invalide ou expiré.');
+    }
+
+    return this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        email: user.pendingEmail,
+        pendingEmail: null,
+        emailChangeToken: null,
+        emailChangeTokenExpiry: null,
+      },
     });
   }
 
