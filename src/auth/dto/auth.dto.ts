@@ -1,8 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Role } from '@prisma/client';
 import {
   IsEmail,
-  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -53,16 +51,6 @@ export class RegisterUserDto {
   @IsString()
   @IsNotEmpty()
   pseudo: string;
-
-  @ApiProperty({
-    description: "Rôle de l'utilisateur",
-    enum: Role,
-    required: false,
-    default: Role.USER,
-  })
-  @IsOptional()
-  @IsEnum(Role)
-  role?: Role;
 }
 
 export class LoginUserDto {

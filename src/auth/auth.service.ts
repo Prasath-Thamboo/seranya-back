@@ -17,6 +17,24 @@ import { Prisma } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import { passwordResetTemplate } from 'src/mailer/templates/passwordResetTemplate';
 
+// Champs jamais renvoyés au client : hash du mot de passe et tous les tokens.
+const SAFE_USER_SELECT = {
+  id: true,
+  name: true,
+  lastName: true,
+  address: true,
+  email: true,
+  phone: true,
+  status: true,
+  pseudo: true,
+  role: true,
+  profileImage: true,
+  createdAt: true,
+  updatedAt: true,
+  isSubscribed: true,
+  stripeSubscriptionId: true,
+} as const;
+
 @Injectable()
 export class AuthService {
   // Liste des tokens révoqués (pour l'exemple)
@@ -40,7 +58,10 @@ export class AuthService {
       email: registerUserDto.email,
       password: hashedPassword,
       pseudo: registerUserDto.pseudo,
-      role: registerUserDto.role || 'USER',
+      // Le rôle n'est jamais lu depuis la requête client : l'auto-inscription
+      // publique ne doit produire que des comptes USER. Les comptes EDITOR/ADMIN
+      // sont créés exclusivement via POST /users (réservé aux ADMIN).
+      role: 'USER',
       status: 'en_attente',
       confirmationToken,
       confirmationTokenExpiry,
@@ -48,7 +69,7 @@ export class AuthService {
 
     let user;
     try {
-      user = await this.prisma.user.create({ data: userData });
+      user = await this.prisma.user.create({ data: userData, select: SAFE_USER_SELECT });
     } catch (error) {
       if (error.code === 'P2002') {
         const field = error.meta?.target?.[0] ?? 'email';
@@ -98,6 +119,7 @@ export class AuthService {
         confirmationToken: token,
         confirmationTokenExpiry: { gte: new Date() },
       },
+      select: SAFE_USER_SELECT,
     });
 
     if (!user) {
@@ -127,6 +149,7 @@ export class AuthService {
           confirmationToken: null, // Supprime le token de confirmation
           confirmationTokenExpiry: null, // Supprime la date d'expiration
         },
+        select: SAFE_USER_SELECT,
       });
 
       Logger.debug(
@@ -243,13 +266,14 @@ export class AuthService {
         resetToken: null, // Effacer le token après l'utilisation
         resetTokenExpiry: null, // Effacer l'expiration du token
       },
+      select: SAFE_USER_SELECT,
     });
   }
 
-  // Suppression de compte utilisateur
-  async deleteAccount(email: string) {
+  // Suppression du compte de l'utilisateur authentifié (jamais d'un autre compte).
+  async deleteAccount(userId: number) {
     const user = await this.prisma.user.delete({
-      where: { email },
+      where: { id: userId },
     });
 
     await this.mailerService.sendMail(
@@ -268,22 +292,7 @@ export class AuthService {
 
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        pseudo: true,
-        role: true,
-        name: true,
-        lastName: true,
-        address: true,
-        phone: true,
-        status: true,
-        profileImage: true,
-        createdAt: true,
-        updatedAt: true,
-        isSubscribed: true,
-        stripeSubscriptionId: true,
-      },
+      select: SAFE_USER_SELECT,
     });
 
     if (!user) {

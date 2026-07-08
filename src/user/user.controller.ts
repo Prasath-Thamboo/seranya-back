@@ -15,7 +15,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto, UpdateUserDto, ResetPasswordDto } from './dto/user.dto';
+import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import {
   ApiTags,
   ApiOperation,
@@ -75,7 +75,9 @@ export class UserController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get a user by ID' })
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('ADMIN')
+  @ApiOperation({ summary: 'Get a user by ID (admin only)' })
   @ApiResponse({ status: 200, description: 'Return a user.' })
   @ApiResponse({ status: 404, description: 'User not found.' })
   findOne(@Param('id') id: string) {
@@ -142,21 +144,6 @@ export class UserController {
   @ApiResponse({ status: 404, description: 'User not found.' })
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);
-  }
-
-  @Post('forgot-password')
-  @ApiOperation({ summary: 'Generate password reset token' })
-  @ApiResponse({ status: 200, description: 'Password reset token generated.' })
-  async generateResetToken(@Body() { email }: { email: string }) {
-    const resetToken = await this.userService.generateResetToken(email);
-    return { message: 'Password reset token generated.', resetToken };
-  }
-
-  @Post('reset-password')
-  @ApiOperation({ summary: 'Reset user password' })
-  @ApiResponse({ status: 200, description: 'Password has been successfully reset.' })
-  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
-    return this.userService.resetPassword(resetPasswordDto);
   }
 
   @Post('send-email')

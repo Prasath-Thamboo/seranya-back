@@ -3,7 +3,6 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
-  MinLength,
   IsOptional,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -88,24 +87,6 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   })
   @IsOptional()
   profileImage?: string;
-}
-
-export class ResetPasswordDto {
-  @ApiProperty({ description: 'Email of the user' })
-  @IsEmail()
-  @IsNotEmpty()
-  email: string;
-
-  @ApiProperty({ description: 'New password of the user' })
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(8)
-  newPassword: string;
-
-  @ApiProperty({ description: 'Password reset token' })
-  @IsString()
-  @IsNotEmpty()
-  resetToken: string;
 }
 
 // PARTIAL TYPE pour changements non obligatoires pour certains champs dans l'update

@@ -69,9 +69,10 @@ export class AuthController {
   }
 
   @Delete('delete')
+  @UseGuards(JwtAuthGuard)
   @ApiConsumes('application/x-www-form-urlencoded')
-  async deleteAccount(@Body('email') email: string) {
-    const result = await this.authService.deleteAccount(email);
+  async deleteAccount(@Req() req: any) {
+    const result = await this.authService.deleteAccount(req.user.id);
     return {
       message: 'Account deleted successfully',
       result,
