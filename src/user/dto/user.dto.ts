@@ -6,7 +6,7 @@ import {
   IsOptional,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Role } from 'src/enums/role.enum';
+import { Role } from '@prisma/client';
 import { PartialType } from '@nestjs/mapped-types';
 
 export class CreateUserDto {
