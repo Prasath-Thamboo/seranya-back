@@ -2,11 +2,13 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  NotFoundException,
   Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailerService } from '../mailer/mailer.service';
+import { PaymentService } from '../payments/payment.service';
 import {
   RegisterUserDto,
   LoginUserDto,
@@ -44,6 +46,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly mailerService: MailerService,
     private readonly jwtService: JwtService,
+    private readonly paymentService: PaymentService,
   ) {}
 
   // Enregistrement d'un utilisateur
@@ -272,9 +275,34 @@ export class AuthService {
 
   // Suppression du compte de l'utilisateur authentifié (jamais d'un autre compte).
   async deleteAccount(userId: number) {
-    const user = await this.prisma.user.delete({
-      where: { id: userId },
-    });
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('Utilisateur introuvable.');
+    }
+
+    // L'abonnement Stripe actif doit être résilié avant de perdre toute trace
+    // de l'utilisateur, sinon il continuerait à être prélevé pour un compte
+    // qui n'existe plus. Une panne Stripe ne doit pas bloquer le droit à
+    // l'effacement : elle est juste journalisée.
+    if (user.stripeSubscriptionId) {
+      try {
+        await this.paymentService.cancelSubscription(user.stripeSubscriptionId);
+      } catch (error) {
+        Logger.error(
+          `Échec de l'annulation de l'abonnement Stripe ${user.stripeSubscriptionId} pour l'utilisateur ${userId}: ${error.message}`,
+        );
+      }
+    }
+
+    // Comment.userId et UserUnit.userId sont des clés étrangères obligatoires
+    // sans cascade côté Prisma : il faut les vider avant de supprimer
+    // l'utilisateur, sinon la suppression échoue avec une violation de
+    // contrainte de clé étrangère.
+    await this.prisma.$transaction([
+      this.prisma.comment.deleteMany({ where: { userId } }),
+      this.prisma.userUnit.deleteMany({ where: { userId } }),
+      this.prisma.user.delete({ where: { id: userId } }),
+    ]);
 
     await this.mailerService.sendMail(
       user.email,

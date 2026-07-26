@@ -5,9 +5,11 @@ import { PrismaService } from '../prisma/prisma.service';
 import { MailerService } from '../mailer/mailer.service';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy'; // Optionnel : si vous utilisez JwtStrategy pour l'authentification
+import { PaymentModule } from '../payments/payment.module';
 
 @Module({
   imports: [
+    PaymentModule,
     JwtModule.register({
       secret: 'yourSecretKey', // Remplacez par votre clé secrète JWT
       signOptions: { expiresIn: '1h' }, // Configuration du token JWT
