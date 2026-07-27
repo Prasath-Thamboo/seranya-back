@@ -4,9 +4,10 @@ import { UserService } from './user.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { MailerService } from 'src/mailer/mailer.service';
 import { FileModule } from '../files/file.module';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
-  imports: [PrismaModule, FileModule],
+  imports: [PrismaModule, FileModule, NotificationModule],
   controllers: [UserController],
   providers: [UserService, MailerService],
 })

@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailerService } from '../mailer/mailer.service';
 import { PaymentService } from '../payments/payment.service';
+import { NotificationService } from '../notification/notification.service';
 import {
   RegisterUserDto,
   LoginUserDto,
@@ -47,6 +48,7 @@ export class AuthService {
     private readonly mailerService: MailerService,
     private readonly jwtService: JwtService,
     private readonly paymentService: PaymentService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   // Enregistrement d'un utilisateur
@@ -86,6 +88,16 @@ export class AuthService {
         );
       }
       throw error;
+    }
+
+    try {
+      await this.notificationService.create(
+        'NEW_USER',
+        `Nouvel utilisateur inscrit : ${user.pseudo}`,
+        `/admin/users/${user.id}`,
+      );
+    } catch (error) {
+      Logger.warn(`Notification NEW_USER non créée pour ${user.email}: ${error.message}`);
     }
 
     // L'envoi de l'email est isolé de la création du compte : une panne du

@@ -19,6 +19,7 @@ import { FileModule } from './files/file.module';
 import { TutorialModule } from './tutorial/tutorial.module';
 import { DefinitionModule } from './definition/definition.module';
 import { CommentModule } from './comment/comment.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { CommentModule } from './comment/comment.module';
     TutorialModule,
     DefinitionModule,
     CommentModule,
+    NotificationModule,
   ],
   controllers: [AppController, WebhookController],
   providers: [

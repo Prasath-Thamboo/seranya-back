@@ -4,14 +4,18 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationService } from '../notification/notification.service';
 import { CreateCommentDto, UpdateCommentDto } from './dto/comment.dto';
 
 @Injectable()
 export class CommentService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationService: NotificationService,
+  ) {}
 
   async create(dto: CreateCommentDto, userId: number) {
-    return this.prisma.comment.create({
+    const comment = await this.prisma.comment.create({
       data: {
         content: dto.content,
         userId,
@@ -22,8 +26,24 @@ export class CommentService {
       },
       include: {
         user: { select: { id: true, pseudo: true, profileImage: true, role: true } },
+        post: { select: { title: true } },
+        unit: { select: { title: true } },
+        class: { select: { title: true } },
+        tutorial: { select: { title: true } },
       },
     });
+
+    const resourceTitle =
+      comment.post?.title ?? comment.unit?.title ?? comment.class?.title ?? comment.tutorial?.title;
+    await this.notificationService.create(
+      'COMMENT',
+      resourceTitle
+        ? `${comment.user.pseudo} a commenté « ${resourceTitle} »`
+        : `${comment.user.pseudo} a posté un commentaire`,
+      '/admin/discussions',
+    );
+
+    return comment;
   }
 
   async findByResource(

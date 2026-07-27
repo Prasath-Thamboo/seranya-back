@@ -10,14 +10,14 @@ import { Role } from '@prisma/client';
 import { PartialType } from '@nestjs/mapped-types';
 
 export class CreateUserDto {
-  @ApiProperty({ description: 'First name of the user' })
+  @ApiPropertyOptional({ description: 'First name of the user' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   name?: string;
 
-  @ApiProperty({ description: 'Last name of the user' })
+  @ApiPropertyOptional({ description: 'Last name of the user' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   lastName?: string;
 
   @ApiProperty({ description: 'Address of the user' })

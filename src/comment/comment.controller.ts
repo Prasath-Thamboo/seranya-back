@@ -46,7 +46,7 @@ export class CommentController {
   }
 
   @Get('all')
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'EDITOR')
   @UseGuards(JwtAuthGuard, RoleGuard)
   findAll() {
     return this.commentService.findAll();

@@ -1,12 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { emailChangeTemplate } from './templates/emailChangeTemplate';
+import { confirmationTemplate } from './templates/confirmationTemplate';
+import { gdprAcknowledgementTemplate } from './templates/gdprAcknowledgementTemplate';
+import { internalNotificationTemplate } from './templates/internalNotificationTemplate';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class MailerService {
   private transporter;
 
-  constructor() {
+  constructor(private readonly notificationService: NotificationService) {
     this.transporter = nodemailer.createTransport({
       host: 'smtp.resend.com',
       port: 465,
@@ -37,18 +41,12 @@ export class MailerService {
   }
 
   async sendConfirmationEmail(to: string, confirmationUrl: string) {
-    const htmlContent = `
-      <p>Bienvenue sur notre plateforme !</p>
-      <p>Veuillez confirmer votre inscription en cliquant sur le lien suivant :</p>
-      <a href="${confirmationUrl}">Confirmer mon inscription</a>
-    `;
-
     await this.sendMail(
       to,
-      'Confirmez votre inscription',
-      'Veuillez confirmer votre inscription en cliquant sur le lien suivant : ' +
+      'Bienvenue sur Seranya — confirmez votre inscription',
+      'Merci de votre inscription sur Seranya. Confirmez votre adresse email en cliquant sur le lien suivant : ' +
         confirmationUrl,
-      htmlContent,
+      confirmationTemplate(confirmationUrl),
     );
   }
 
@@ -63,12 +61,14 @@ export class MailerService {
 
   // Nouvelle méthode pour envoyer le message de contact
   async sendContactMessage(email: string, subject: string, message: string) {
-    const htmlContent = `
-      <p><strong>De:</strong> ${email}</p>
-      <p><strong>Sujet:</strong> ${subject}</p>
-      <p><strong>Message:</strong></p>
-      <p>${message}</p>
-    `;
+    const htmlContent = internalNotificationTemplate(
+      'Nouveau message de contact',
+      [
+        { label: 'De', value: email },
+        { label: 'Sujet', value: subject },
+      ],
+      message,
+    );
 
     await this.sendMail(
       process.env.CONTACT_EMAIL_TO, // L'adresse qui recevra les messages de contact
@@ -76,6 +76,12 @@ export class MailerService {
       `De: ${email}\nSujet: ${subject}\n\n${message}`,
       htmlContent,
     );
+
+    try {
+      await this.notificationService.create('CONTACT', `Nouveau message de contact : ${subject}`);
+    } catch (error) {
+      Logger.warn(`Notification CONTACT non créée: ${error.message}`);
+    }
   }
 
   // Demande d'exercice de droits RGPD (accès, rectification, suppression, opposition, portabilité)
@@ -85,13 +91,15 @@ export class MailerService {
     requestType: string,
     message: string,
   ) {
-    const htmlContent = `
-      <p><strong>Type de demande RGPD:</strong> ${requestType}</p>
-      <p><strong>Nom:</strong> ${name}</p>
-      <p><strong>Email du demandeur:</strong> ${email}</p>
-      <p><strong>Détails:</strong></p>
-      <p>${message}</p>
-    `;
+    const htmlContent = internalNotificationTemplate(
+      `Demande RGPD : ${requestType}`,
+      [
+        { label: 'Type de demande', value: requestType },
+        { label: 'Nom', value: name },
+        { label: 'Email du demandeur', value: email },
+      ],
+      message,
+    );
 
     // Notification au DPO : c'est la partie qui doit faire foi de la demande.
     // Une éventuelle panne d'envoi ici doit remonter en erreur.
@@ -102,16 +110,20 @@ export class MailerService {
       htmlContent,
     );
 
+    try {
+      await this.notificationService.create(
+        'GDPR_REQUEST',
+        `Demande RGPD (${requestType}) de ${name}`,
+      );
+    } catch (error) {
+      Logger.warn(`Notification GDPR_REQUEST non créée: ${error.message}`);
+    }
+
     // Accusé de réception envoyé au demandeur : preuve de la date de réception
     // pour respecter le délai légal de réponse d'un mois. Best-effort : le DPO a
     // déjà été notifié, donc un échec ici (ex. domaine d'envoi non vérifié côté
     // fournisseur mail) ne doit pas faire échouer la demande aux yeux de l'utilisateur.
-    const confirmationHtml = `
-      <p>Bonjour ${name},</p>
-      <p>Nous avons bien reçu votre demande de type « ${requestType} » concernant vos données personnelles.</p>
-      <p>Conformément au RGPD, nous y répondrons dans un délai maximum d'un mois.</p>
-      <p>L'équipe Seranya</p>
-    `;
+    const confirmationHtml = gdprAcknowledgementTemplate(name, requestType);
 
     try {
       await this.sendMail(

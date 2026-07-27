@@ -44,8 +44,8 @@ model Unit {
   subtitle    String
   story       String
   bio         String
-  quote       String?    // Ajout de la propriété quote
-  color       String?    // Ajout de la propriété color
+  quote       String? // Ajout de la propriété quote
+  color       String? // Ajout de la propriété color
   isPublished Boolean    @default(false)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
@@ -58,21 +58,21 @@ model Unit {
 }
 
 model Class {
-  id          String     @id @default(uuid())
+  id          String      @id @default(uuid())
   title       String
   intro       String
   subtitle    String
   story       String
   bio         String
-  quote       String?    // Ajout de la propriété quote
-  isPublished Boolean    @default(false)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  uploads     Upload[]   @relation("ClassUploads")
-  units       Unit[]     @relation("UnitClasses")
+  quote       String? // Ajout de la propriété quote
+  isPublished Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  uploads     Upload[]    @relation("ClassUploads")
+  units       Unit[]      @relation("UnitClasses")
   color       String?
   postClasses PostClass[]
-  comments    Comment[]  // Correction : Le modèle `Class` doit avoir un champ `comments`
+  comments    Comment[] // Correction : Le modèle `Class` doit avoir un champ `comments`
 }
 
 model Post {
@@ -97,14 +97,16 @@ model PostUnit {
   unitId Int
   post   Post @relation(fields: [postId], references: [id])
   unit   Unit @relation(fields: [unitId], references: [id])
+
   @@id([postId, unitId])
 }
 
 model PostClass {
   postId  Int
   classId String
-  post    Post  @relation(fields: [postId], references: [id])
-  class   Class @relation(fields: [classId], references: [id])
+  post    Post   @relation(fields: [postId], references: [id])
+  class   Class  @relation(fields: [classId], references: [id])
+
   @@id([postId, classId])
 }
 
@@ -113,6 +115,7 @@ model UserUnit {
   unitId Int
   user   User @relation(fields: [userId], references: [id])
   unit   Unit @relation(fields: [unitId], references: [id])
+
   @@id([userId, unitId])
 }
 
@@ -145,6 +148,15 @@ model Comment {
   tutorial   Tutorial? @relation(fields: [tutorialId], references: [id])
 }
 
+model Notification {
+  id        Int              @id @default(autoincrement())
+  type      NotificationType
+  message   String
+  link      String?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+}
+
 enum UploadType {
   GALERY
   PROFILEIMAGE
@@ -156,6 +168,14 @@ enum Role {
   USER
   EDITOR
   ADMIN
+}
+
+// COMMENT est visible par ADMIN et EDITOR ; les autres types sont réservés à l'ADMIN.
+enum NotificationType {
+  COMMENT
+  CONTACT
+  GDPR_REQUEST
+  NEW_USER
 }
 
 enum UnitType {
