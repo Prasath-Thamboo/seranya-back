@@ -10,6 +10,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreatePostDto, UpdatePostDto } from './dto/post.dto';
 import { Prisma, UploadType, PostType } from '@prisma/client';
 import { FileService } from '../files/file.service';
+import { sanitizeRichText } from '../common/sanitize-html.util';
 import { URL } from 'url';
 
 @Injectable()
@@ -203,7 +204,7 @@ export class PostService {
           title: createPostDto.title,
           intro: createPostDto.intro,
           subtitle: createPostDto.subtitle || null,
-          content: createPostDto.content || null,
+          content: sanitizeRichText(createPostDto.content),
           color: createPostDto.color || null, // Gestion de la propriété color
           isPublished: createPostDto.isPublished || false,
           type: createPostDto.type as PostType, // Assurez-vous que le type est correct
@@ -358,7 +359,9 @@ export class PostService {
           ...(updatePostDto.title && { title: updatePostDto.title }),
           ...(updatePostDto.intro && { intro: updatePostDto.intro }),
           ...(updatePostDto.subtitle && { subtitle: updatePostDto.subtitle }),
-          ...(updatePostDto.content && { content: updatePostDto.content }),
+          ...(updatePostDto.content && {
+            content: sanitizeRichText(updatePostDto.content),
+          }),
           ...(updatePostDto.color !== undefined && {
             color: updatePostDto.color,
           }), // Gestion de la propriété color

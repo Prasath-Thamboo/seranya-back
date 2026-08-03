@@ -10,6 +10,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateUnitDto, UpdateUnitDto } from './dto/unit.dto';
 import { Prisma, UploadType } from '@prisma/client';
 import { FileService } from '../files/file.service';
+import { sanitizeRichText } from '../common/sanitize-html.util';
 import { URL } from 'url';
 
 @Injectable()
@@ -158,8 +159,8 @@ export class UnitService {
           intro: createUnitDto.intro,
           type: createUnitDto.type,
           subtitle: createUnitDto.subtitle || null,
-          story: createUnitDto.story || null,
-          bio: createUnitDto.bio || null,
+          story: sanitizeRichText(createUnitDto.story),
+          bio: sanitizeRichText(createUnitDto.bio),
           quote: createUnitDto.quote || null, // Gestion de la propriété quote
           color: createUnitDto.color || null, // Gestion de la propriété color
           isPublished: createUnitDto.isPublished || false,
@@ -413,8 +414,10 @@ export class UnitService {
           ...(updateUnitDto.title && { title: updateUnitDto.title }),
           ...(updateUnitDto.intro && { intro: updateUnitDto.intro }),
           ...(updateUnitDto.subtitle && { subtitle: updateUnitDto.subtitle }),
-          ...(updateUnitDto.story && { story: updateUnitDto.story }),
-          ...(updateUnitDto.bio && { bio: updateUnitDto.bio }),
+          ...(updateUnitDto.story && {
+            story: sanitizeRichText(updateUnitDto.story),
+          }),
+          ...(updateUnitDto.bio && { bio: sanitizeRichText(updateUnitDto.bio) }),
           ...(updateUnitDto.quote !== undefined && {
             quote: updateUnitDto.quote,
           }),

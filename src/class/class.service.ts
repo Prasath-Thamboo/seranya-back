@@ -10,6 +10,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateClassDto, UpdateClassDto } from './dto/class.dto';
 import { Prisma, UploadType } from '@prisma/client';
 import { FileService } from '../files/file.service';
+import { sanitizeRichText } from '../common/sanitize-html.util';
 
 @Injectable()
 export class ClassService {
@@ -158,8 +159,8 @@ export class ClassService {
           title: createClassDto.title,
           intro: createClassDto.intro,
           subtitle: createClassDto.subtitle || null,
-          story: createClassDto.story || null,
-          bio: createClassDto.bio || null,
+          story: sanitizeRichText(createClassDto.story),
+          bio: sanitizeRichText(createClassDto.bio),
           quote: createClassDto.quote || null, // Gestion de la propriété quote
           color: createClassDto.color || null, // Gestion de la propriété color
           isPublished: createClassDto.isPublished || false,
@@ -317,8 +318,12 @@ export class ClassService {
           ...(updateClassDto.title && { title: updateClassDto.title }),
           ...(updateClassDto.intro && { intro: updateClassDto.intro }),
           ...(updateClassDto.subtitle && { subtitle: updateClassDto.subtitle }),
-          ...(updateClassDto.story && { story: updateClassDto.story }),
-          ...(updateClassDto.bio && { bio: updateClassDto.bio }),
+          ...(updateClassDto.story && {
+            story: sanitizeRichText(updateClassDto.story),
+          }),
+          ...(updateClassDto.bio && {
+            bio: sanitizeRichText(updateClassDto.bio),
+          }),
           ...(updateClassDto.quote !== undefined && {
             quote: updateClassDto.quote,
           }), // Gestion de la propriété quote
