@@ -1,4 +1,4 @@
-import sanitizeHtml from 'sanitize-html';
+import * as sanitizeHtml from 'sanitize-html';
 
 // Allowlist matches the default ReactQuill toolbar used in the admin editor
 // (bold/italic/underline/strike, headers, lists, blockquote, link, image).
