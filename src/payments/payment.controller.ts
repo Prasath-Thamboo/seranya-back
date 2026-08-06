@@ -39,6 +39,7 @@ export class PaymentController {
       data: {
         isSubscribed: false,
         stripeSubscriptionId: null,
+        role: user.role === 'EDITOR' ? 'USER' : user.role,
       },
     });
 

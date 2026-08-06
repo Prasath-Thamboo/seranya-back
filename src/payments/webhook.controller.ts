@@ -40,11 +40,17 @@ export class WebhookController {
           const subscriptionId = session.subscription as string;
           const userId = Number(session.metadata.userId);
 
+          const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+          });
+
           await this.prisma.user.update({
             where: { id: userId },
             data: {
               stripeSubscriptionId: subscriptionId,
               isSubscribed: true,
+              // Ne jamais rétrograder un ADMIN : la souscription ne fait que promouvoir un USER en EDITOR
+              role: user?.role === 'USER' ? 'EDITOR' : user?.role,
             },
           });
 
@@ -54,13 +60,21 @@ export class WebhookController {
         case 'customer.subscription.updated': {
           const subscription = event.data.object as Stripe.Subscription;
           const activeStatuses = ['active', 'trialing'];
+          const isActive = activeStatuses.includes(subscription.status);
 
-          await this.prisma.user.updateMany({
+          const users = await this.prisma.user.findMany({
             where: { stripeSubscriptionId: subscription.id },
-            data: {
-              isSubscribed: activeStatuses.includes(subscription.status),
-            },
           });
+
+          for (const user of users) {
+            await this.prisma.user.update({
+              where: { id: user.id },
+              data: {
+                isSubscribed: isActive,
+                role: !isActive && user.role === 'EDITOR' ? 'USER' : user.role,
+              },
+            });
+          }
 
           break;
         }
@@ -68,13 +82,20 @@ export class WebhookController {
         case 'customer.subscription.deleted': {
           const subscription = event.data.object as Stripe.Subscription;
 
-          await this.prisma.user.updateMany({
+          const users = await this.prisma.user.findMany({
             where: { stripeSubscriptionId: subscription.id },
-            data: {
-              isSubscribed: false,
-              stripeSubscriptionId: null,
-            },
           });
+
+          for (const user of users) {
+            await this.prisma.user.update({
+              where: { id: user.id },
+              data: {
+                isSubscribed: false,
+                stripeSubscriptionId: null,
+                role: user.role === 'EDITOR' ? 'USER' : user.role,
+              },
+            });
+          }
 
           break;
         }
