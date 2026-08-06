@@ -50,6 +50,35 @@ export class WebhookController {
 
           break;
         }
+
+        case 'customer.subscription.updated': {
+          const subscription = event.data.object as Stripe.Subscription;
+          const activeStatuses = ['active', 'trialing'];
+
+          await this.prisma.user.updateMany({
+            where: { stripeSubscriptionId: subscription.id },
+            data: {
+              isSubscribed: activeStatuses.includes(subscription.status),
+            },
+          });
+
+          break;
+        }
+
+        case 'customer.subscription.deleted': {
+          const subscription = event.data.object as Stripe.Subscription;
+
+          await this.prisma.user.updateMany({
+            where: { stripeSubscriptionId: subscription.id },
+            data: {
+              isSubscribed: false,
+              stripeSubscriptionId: null,
+            },
+          });
+
+          break;
+        }
+
         default:
           console.log(`Unhandled event type: ${event.type}`);
       }

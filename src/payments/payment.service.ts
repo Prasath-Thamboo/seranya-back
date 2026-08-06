@@ -14,7 +14,7 @@ export class PaymentService {
         mode: 'subscription',
         line_items: [
           {
-            price: 'price_1QgNdG06xDQj9QaRFH8S3cxr',
+            price: process.env.STRIPE_PRICE_ID as string,
             quantity: 1,
           },
         ],
