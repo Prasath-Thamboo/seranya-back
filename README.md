@@ -18,7 +18,7 @@ API NestJS de Seranya, plateforme de yoga/méditation à univers fantastique. G�
 - Node.js 20+
 - Une base PostgreSQL accessible
 
-## Installation
+### Installation
 
 ```bash
 npm install
