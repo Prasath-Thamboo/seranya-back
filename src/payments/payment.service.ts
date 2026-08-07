@@ -45,4 +45,15 @@ export class PaymentService {
       throw new InternalServerErrorException('Failed to cancel subscription');
     }
   }
+
+  async getSubscription(subscriptionId: string) {
+    try {
+      return await stripe.subscriptions.retrieve(subscriptionId, {
+        expand: ['items.data.price'],
+      });
+    } catch (error) {
+      console.error('Failed to retrieve subscription:', error);
+      throw new InternalServerErrorException('Failed to retrieve subscription');
+    }
+  }
 }
