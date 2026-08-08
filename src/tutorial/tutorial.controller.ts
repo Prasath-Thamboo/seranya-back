@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, Req, UseGuards } from '@nestjs/common';
+import { Request } from 'express';
 import { TutorialService } from './tutorial.service';
 import { CreateTutorialDto, UpdateTutorialDto } from './dto/tutorial.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
 import { RoleGuard } from '../auth/role.guard';
 import { Roles } from '../auth/roles.decorator';
 
@@ -9,9 +11,15 @@ import { Roles } from '../auth/roles.decorator';
 export class TutorialController {
   constructor(private readonly tutorialService: TutorialService) {}
 
+  private isPrivileged(req: Request): boolean {
+    const user = req.user as any;
+    return user?.role === 'ADMIN' || user?.role === 'EDITOR';
+  }
+
   @Get('published')
-  findPublished() {
-    return this.tutorialService.findPublished();
+  @UseGuards(OptionalJwtAuthGuard)
+  findPublished(@Req() req: Request) {
+    return this.tutorialService.findPublished(this.isPrivileged(req));
   }
 
   @Get()
@@ -22,8 +30,9 @@ export class TutorialController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.tutorialService.findOne(+id);
+  @UseGuards(OptionalJwtAuthGuard)
+  findOne(@Param('id') id: string, @Req() req: Request) {
+    return this.tutorialService.findOne(+id, this.isPrivileged(req));
   }
 
   @Post()

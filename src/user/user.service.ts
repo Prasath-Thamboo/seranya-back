@@ -7,10 +7,12 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
+import { Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { MailerService } from '../mailer/mailer.service';
 import { FileService } from '../files/file.service';
+import { toBoolean } from '../common/coerce.util';
 
 // Champs jamais renvoyés au client : hash du mot de passe et tous les tokens
 // (reset password, confirmation email, changement d'email).
@@ -109,11 +111,29 @@ export class UserService {
       profileImageUrl = await this.fileService.uploadProfileImage(profileImage, id);
     }
 
+    // Un EDITOR n'a ce rôle que via un abonnement (voir webhook.controller.ts) :
+    // s'il est rétrogradé à USER depuis l'admin, il doit perdre isSubscribed pour
+    // la même raison — sinon il resterait marqué "abonné" sans être EDITOR.
+    let demotionOverride: { isSubscribed: false } | undefined;
+    if (updateUserDto.role === Role.USER) {
+      const existingUser = await this.prisma.user.findUnique({ where: { id } });
+      if (existingUser?.role === Role.EDITOR) {
+        demotionOverride = { isSubscribed: false };
+      }
+    }
+
+    // Ce endpoint accepte du multipart/form-data (upload de profileImage), donc
+    // isSubscribed arrive comme "true"/"false" en chaîne — jamais un vrai booléen.
+    const { isSubscribed: rawIsSubscribed, ...restUserDto } = updateUserDto;
+    const coercedIsSubscribed = toBoolean(rawIsSubscribed);
+
     return this.prisma.user.update({
       where: { id },
       data: {
-        ...updateUserDto,
+        ...restUserDto,
+        ...(coercedIsSubscribed !== undefined && { isSubscribed: coercedIsSubscribed }),
         ...(profileImageUrl && { profileImage: profileImageUrl }),
+        ...demotionOverride,
       },
       select: SAFE_USER_SELECT,
     });

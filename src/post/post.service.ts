@@ -11,6 +11,8 @@ import { CreatePostDto, UpdatePostDto } from './dto/post.dto';
 import { Prisma, UploadType, PostType } from '@prisma/client';
 import { FileService } from '../files/file.service';
 import { sanitizeRichText } from '../common/sanitize-html.util';
+import { publicationFilter } from '../common/publication.util';
+import { toBoolean } from '../common/coerce.util';
 import { URL } from 'url';
 
 @Injectable()
@@ -29,8 +31,9 @@ export class PostService {
   }
 
   // Méthode findAll
-  async findAll() {
+  async findAll(isPrivileged: boolean) {
     const posts = await this.prisma.post.findMany({
+      where: publicationFilter(isPrivileged),
       include: {
         uploads: true,
         postUnits: {
@@ -80,11 +83,12 @@ export class PostService {
   }
 
   // Nouvelle Méthode : findAllRegions
-  async findAllRegions() {
+  async findAllRegions(isPrivileged: boolean) {
     try {
       const regionPosts = await this.prisma.post.findMany({
         where: {
           type: PostType.REGION,
+          ...publicationFilter(isPrivileged),
         },
         include: {
           uploads: true,
@@ -138,9 +142,9 @@ export class PostService {
   }
 
   // Méthode findOne
-  async findOne(id: number) {
-    const foundPost = await this.prisma.post.findUnique({
-      where: { id },
+  async findOne(id: number, isPrivileged: boolean) {
+    const foundPost = await this.prisma.post.findFirst({
+      where: { id, ...publicationFilter(isPrivileged) },
       include: {
         uploads: true,
         postUnits: {
@@ -206,7 +210,10 @@ export class PostService {
           subtitle: createPostDto.subtitle || null,
           content: sanitizeRichText(createPostDto.content),
           color: createPostDto.color || null, // Gestion de la propriété color
-          isPublished: createPostDto.isPublished || false,
+          isPublished: toBoolean(createPostDto.isPublished) ?? false,
+          publishedAt: createPostDto.publishedAt
+            ? new Date(createPostDto.publishedAt)
+            : null,
           type: createPostDto.type as PostType, // Assurez-vous que le type est correct
           postUnits: {
             create:
@@ -366,7 +373,12 @@ export class PostService {
             color: updatePostDto.color,
           }), // Gestion de la propriété color
           ...(updatePostDto.isPublished !== undefined && {
-            isPublished: updatePostDto.isPublished,
+            isPublished: toBoolean(updatePostDto.isPublished),
+          }),
+          ...(updatePostDto.publishedAt !== undefined && {
+            publishedAt: updatePostDto.publishedAt
+              ? new Date(updatePostDto.publishedAt)
+              : null,
           }),
           ...(updatePostDto.type && { type: updatePostDto.type }),
           postUnits: {

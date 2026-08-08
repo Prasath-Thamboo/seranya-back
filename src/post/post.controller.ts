@@ -17,6 +17,7 @@ import {
 import { PostService } from './post.service';
 import { CreatePostDto, UpdatePostDto } from './dto/post.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
 import { RoleGuard } from '../auth/role.guard';
 import { Roles } from '../auth/roles.decorator';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
@@ -33,20 +34,29 @@ export class PostController {
 
   constructor(private readonly postService: PostService) {}
 
-  @Get()
-  findAll() {
-    return this.postService.findAll();
+  private isPrivileged(req: Request): boolean {
+    const user = req.user as any;
+    return user?.role === 'ADMIN' || user?.role === 'EDITOR';
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.postService.findOne(+id);
+  @Get()
+  @UseGuards(OptionalJwtAuthGuard)
+  findAll(@Req() req: Request) {
+    return this.postService.findAll(this.isPrivileged(req));
   }
 
   // Nouveau Endpoint : GET /posts/regions
+  // Doit être déclaré avant ':id' pour ne pas être intercepté par la route dynamique.
   @Get('regions')
-  findAllRegions() {
-    return this.postService.findAllRegions();
+  @UseGuards(OptionalJwtAuthGuard)
+  findAllRegions(@Req() req: Request) {
+    return this.postService.findAllRegions(this.isPrivileged(req));
+  }
+
+  @Get(':id')
+  @UseGuards(OptionalJwtAuthGuard)
+  findOne(@Param('id') id: string, @Req() req: Request) {
+    return this.postService.findOne(+id, this.isPrivileged(req));
   }
 
   @Post()

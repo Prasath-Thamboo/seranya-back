@@ -4,10 +4,13 @@ import {
   IsEnum,
   IsNotEmpty,
   IsOptional,
+  IsBoolean,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { PartialType } from '@nestjs/mapped-types';
+import { Transform } from 'class-transformer';
+import { toBoolean } from '../../common/coerce.util';
 
 export class CreateUserDto {
   @ApiPropertyOptional({ description: 'First name of the user' })
@@ -79,6 +82,14 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @ApiPropertyOptional({ description: 'Role of the user', enum: Role })
   @IsEnum(Role)
   role?: Role;
+
+  // multipart/form-data (ce endpoint accepte un profileImage) envoie "true"/"false"
+  // sous forme de chaîne — coercion nécessaire avant validation.
+  @ApiPropertyOptional({ description: "Statut d'abonnement de l'utilisateur" })
+  @Transform(({ value }) => toBoolean(value))
+  @IsOptional()
+  @IsBoolean()
+  isSubscribed?: boolean;
 
   @ApiPropertyOptional({
     description: 'Profile image of the user',

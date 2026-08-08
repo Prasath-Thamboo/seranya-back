@@ -6,10 +6,12 @@ import {
   IsOptional,
   IsEnum,
   IsArray,
+  IsDateString,
 } from 'class-validator';
 import { PartialType } from '@nestjs/mapped-types';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { toBoolean } from '../../common/coerce.util';
 
 // Import des enums depuis Prisma
 import { UploadType } from '@prisma/client'; // Assurez-vous que UploadType est importé si utilisé
@@ -45,10 +47,20 @@ export class CreatePostDto {
   @ApiProperty({ required: false })
   content?: string;
 
+  // multipart/form-data always sends "true"/"false" as strings — coerce before validating.
+  @Transform(({ value }) => toBoolean(value))
   @IsBoolean()
   @IsOptional()
   @ApiProperty({ required: false })
   isPublished?: boolean;
+
+  @IsDateString()
+  @IsOptional()
+  @ApiPropertyOptional({
+    description:
+      'Date de publication programmée (ISO 8601). Vide = publication immédiate dès que isPublished=true.',
+  })
+  publishedAt?: string;
 
   @IsEnum(PostTypeEnum)
   @IsOptional()
@@ -97,6 +109,7 @@ export class PostDto {
   subtitle: string;
   content: string;
   isPublished: boolean;
+  publishedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
   type: PostTypeEnum; // Utilisation du nouvel enum

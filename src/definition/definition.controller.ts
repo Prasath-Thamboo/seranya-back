@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, Req, UseGuards } from '@nestjs/common';
+import { Request } from 'express';
 import { DefinitionService } from './definition.service';
 import { CreateDefinitionDto, UpdateDefinitionDto } from './dto/definition.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
 import { RoleGuard } from '../auth/role.guard';
 import { Roles } from '../auth/roles.decorator';
 
@@ -9,9 +11,15 @@ import { Roles } from '../auth/roles.decorator';
 export class DefinitionController {
   constructor(private readonly definitionService: DefinitionService) {}
 
+  private isPrivileged(req: Request): boolean {
+    const user = req.user as any;
+    return user?.role === 'ADMIN' || user?.role === 'EDITOR';
+  }
+
   @Get('published')
-  findPublished() {
-    return this.definitionService.findPublished();
+  @UseGuards(OptionalJwtAuthGuard)
+  findPublished(@Req() req: Request) {
+    return this.definitionService.findPublished(this.isPrivileged(req));
   }
 
   @Get()
@@ -22,8 +30,9 @@ export class DefinitionController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.definitionService.findOne(+id);
+  @UseGuards(OptionalJwtAuthGuard)
+  findOne(@Param('id') id: string, @Req() req: Request) {
+    return this.definitionService.findOne(+id, this.isPrivileged(req));
   }
 
   @Post()

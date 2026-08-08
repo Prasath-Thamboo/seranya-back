@@ -83,6 +83,7 @@ model Post {
   content     String?
   color       String?
   isPublished Boolean     @default(false)
+  publishedAt DateTime?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   type        PostType
@@ -196,6 +197,7 @@ model Definition {
   definition  String
   category    String?
   isPublished Boolean  @default(false)
+  publishedAt DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -206,6 +208,7 @@ model Tutorial {
   description String?
   videoUrl    String
   isPublished Boolean   @default(false)
+  publishedAt DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   comments    Comment[]
