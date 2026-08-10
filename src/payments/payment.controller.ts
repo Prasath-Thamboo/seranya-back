@@ -61,16 +61,13 @@ export class PaymentController {
       return res.status(400).json({ error: 'Subscription not found' });
     }
 
-    await this.paymentService.cancelSubscription(user.stripeSubscriptionId);
-
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: {
-        isSubscribed: false,
-        stripeSubscriptionId: null,
-        role: user.role === 'EDITOR' ? 'USER' : user.role,
-      },
-    });
+    // On ne résilie pas immédiatement : l'utilisateur garde son accès (statut
+    // EDITOR, isSubscribed) jusqu'à la fin de la période déjà payée. Le
+    // webhook customer.subscription.deleted se chargera de la rétrogradation
+    // le moment venu.
+    await this.paymentService.cancelSubscriptionAtPeriodEnd(
+      user.stripeSubscriptionId,
+    );
 
     res.json({ success: true });
   }

@@ -35,6 +35,8 @@ export class PaymentService {
     }
   }
 
+  // Résiliation immédiate : réservée à la suppression de compte, où il n'y a
+  // plus d'utilisateur à qui laisser l'accès jusqu'à la fin de période.
   async cancelSubscription(subscriptionId: string) {
     try {
       const canceledSubscription =
@@ -42,6 +44,20 @@ export class PaymentService {
       return canceledSubscription;
     } catch (error) {
       console.error('Failed to cancel subscription:', error);
+      throw new InternalServerErrorException('Failed to cancel subscription');
+    }
+  }
+
+  // Résiliation demandée par l'utilisateur : l'abonnement reste actif
+  // jusqu'à la fin de la période déjà payée, Stripe le résiliera lui-même
+  // à cette date (déclenchant le webhook customer.subscription.deleted).
+  async cancelSubscriptionAtPeriodEnd(subscriptionId: string) {
+    try {
+      return await stripe.subscriptions.update(subscriptionId, {
+        cancel_at_period_end: true,
+      });
+    } catch (error) {
+      console.error('Failed to schedule subscription cancellation:', error);
       throw new InternalServerErrorException('Failed to cancel subscription');
     }
   }
