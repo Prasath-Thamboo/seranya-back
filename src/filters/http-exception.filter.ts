@@ -21,12 +21,17 @@ export class HttpExceptionFilter implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
+    const responseMessage = exception.response?.message;
+    const message = Array.isArray(responseMessage)
+      ? responseMessage.join(' ')
+      : responseMessage || exception.message || null;
+
     const errorResponse = {
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,
       method: request.method,
-      message: exception.message || null,
+      message,
       ...(exception.response && { errorDetails: exception.response }),
     };
 

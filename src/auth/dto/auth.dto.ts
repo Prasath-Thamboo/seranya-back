@@ -30,7 +30,9 @@ export class RegisterUserDto {
 
   @ApiProperty({ description: "Mot de passe de l'utilisateur" })
   @IsString()
-  @MinLength(8)
+  @MinLength(8, {
+    message: 'Le mot de passe doit contenir au moins 8 caractères.',
+  })
   password: string;
 
   @ApiProperty({ description: "Adresse de l'utilisateur", required: false })
