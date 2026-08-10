@@ -37,6 +37,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     // Return the user object with the correct properties
-    return { id: user.id, email: user.email, role: user.role };
+    return {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      isSubscribed: user.isSubscribed,
+    };
   }
 }

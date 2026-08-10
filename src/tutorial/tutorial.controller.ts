@@ -16,10 +16,21 @@ export class TutorialController {
     return user?.role === 'ADMIN' || user?.role === 'EDITOR';
   }
 
+  // Qui a le droit de regarder la vidéo : ADMIN/EDITOR (le rôle EDITOR n'est
+  // accordé que via un abonnement, cf. webhook.controller.ts) ou un USER
+  // marqué isSubscribed directement par un admin.
+  private canWatch(req: Request): boolean {
+    const user = req.user as any;
+    return this.isPrivileged(req) || !!user?.isSubscribed;
+  }
+
   @Get('published')
   @UseGuards(OptionalJwtAuthGuard)
   findPublished(@Req() req: Request) {
-    return this.tutorialService.findPublished(this.isPrivileged(req));
+    return this.tutorialService.findPublished(
+      this.isPrivileged(req),
+      this.canWatch(req),
+    );
   }
 
   @Get()
@@ -32,7 +43,11 @@ export class TutorialController {
   @Get(':id')
   @UseGuards(OptionalJwtAuthGuard)
   findOne(@Param('id') id: string, @Req() req: Request) {
-    return this.tutorialService.findOne(+id, this.isPrivileged(req));
+    return this.tutorialService.findOne(
+      +id,
+      this.isPrivileged(req),
+      this.canWatch(req),
+    );
   }
 
   @Post()

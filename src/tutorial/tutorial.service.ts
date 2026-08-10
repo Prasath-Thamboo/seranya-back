@@ -3,6 +3,29 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateTutorialDto, UpdateTutorialDto } from './dto/tutorial.dto';
 import { publicationFilter } from '../common/publication.util';
 
+// Même extraction que côté frontend (UniversClient/TutorielsClient) : on ne
+// garde que l'ID de la vidéo pour fabriquer une miniature, jamais l'URL
+// complète, quand l'utilisateur n'a pas le droit de la regarder.
+function getYouTubeThumbnail(url: string): string | null {
+  const match = url.match(/(?:youtu\.be\/|v=|embed\/)([^#&?]{11})/);
+  return match ? `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg` : null;
+}
+
+// L'URL de la vidéo ne doit jamais transiter vers un client qui n'a pas le
+// droit de la regarder : un non-abonné ne doit pas pouvoir la récupérer en
+// lisant la réponse réseau, seule une miniature est fournie à la place.
+function withAccessControl<T extends { videoUrl: string }>(
+  tutorial: T,
+  canWatch: boolean,
+) {
+  const { videoUrl, ...rest } = tutorial;
+  return {
+    ...rest,
+    videoUrl: canWatch ? videoUrl : null,
+    thumbnailUrl: getYouTubeThumbnail(videoUrl),
+  };
+}
+
 @Injectable()
 export class TutorialService {
   constructor(private prisma: PrismaService) {}
@@ -11,14 +34,16 @@ export class TutorialService {
     return this.prisma.tutorial.findMany({ orderBy: { createdAt: 'desc' } });
   }
 
-  findPublished(isPrivileged: boolean) {
-    return this.prisma.tutorial.findMany({
+  async findPublished(isPrivileged: boolean, canWatch: boolean) {
+    const tutorials = await this.prisma.tutorial.findMany({
       where: publicationFilter(isPrivileged),
       orderBy: { createdAt: 'desc' },
     });
+
+    return tutorials.map((tutorial) => withAccessControl(tutorial, canWatch));
   }
 
-  async findOne(id: number, isPrivileged: boolean) {
+  async findOne(id: number, isPrivileged: boolean, canWatch: boolean) {
     const tutorial = await this.prisma.tutorial.findFirst({
       where: { id, ...publicationFilter(isPrivileged) },
     });
@@ -27,7 +52,7 @@ export class TutorialService {
       throw new NotFoundException('Tutorial not found');
     }
 
-    return tutorial;
+    return withAccessControl(tutorial, canWatch);
   }
 
   create(dto: CreateTutorialDto) {
