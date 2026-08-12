@@ -1,5 +1,3 @@
-// spectral5.0/src/unit/dto/unit.dto.ts
-
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { UnitType } from '@prisma/client';
 import {

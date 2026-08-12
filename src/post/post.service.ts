@@ -1,5 +1,3 @@
-// spectral5.0/src/post/post.service.ts
-
 import {
   Injectable,
   BadRequestException,

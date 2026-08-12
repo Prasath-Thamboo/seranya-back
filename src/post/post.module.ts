@@ -1,5 +1,3 @@
-// spectral5.0/src/post/post.module.ts
-
 import { Module } from '@nestjs/common';
 import { PostService } from './post.service';
 import { PostController } from './post.controller';

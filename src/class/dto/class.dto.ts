@@ -1,4 +1,3 @@
-// spectral5.0/src/class/dto/class.dto.ts
 import { ApiProperty } from '@nestjs/swagger'; // Assurez-vous d'importer l'enum UploadType
 
 export class CreateClassDto {

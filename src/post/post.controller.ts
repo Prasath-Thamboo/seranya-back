@@ -1,5 +1,3 @@
-// spectral5.0/src/post/post.controller.ts
-
 import {
   Controller,
   Get,

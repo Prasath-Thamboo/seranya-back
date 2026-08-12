@@ -1,5 +1,3 @@
-// spectral5.0/src/unit/unit.controller.ts
-
 import {
   Controller,
   Get,

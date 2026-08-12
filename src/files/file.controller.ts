@@ -1,5 +1,3 @@
-// spectral5.0/src/files/file.controller.ts
-
 import { Controller, Get, Res, HttpStatus, Query } from '@nestjs/common';
 import { FileService } from './file.service';
 import { Response } from 'express';

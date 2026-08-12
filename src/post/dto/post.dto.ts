@@ -1,5 +1,3 @@
-// spectral5.0/src/post/dto/post.dto.ts
-
 import {
   IsString,
   IsBoolean,

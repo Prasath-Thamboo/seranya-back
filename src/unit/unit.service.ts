@@ -1,5 +1,3 @@
-// spectral5.0/src/unit/unit.service.ts
-
 import {
   Injectable,
   BadRequestException,
