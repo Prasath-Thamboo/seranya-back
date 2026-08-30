@@ -40,7 +40,12 @@ export class MailerController {
     @Body('message') message: string,
   ) {
     try {
-      await this.mailerService.sendDataRequest(name, email, requestType, message);
+      await this.mailerService.sendDataRequest(
+        name,
+        email,
+        requestType,
+        message,
+      );
       Logger.log(`GDPR data request (${requestType}) sent from ${email}`);
       return { message: 'Votre demande a été envoyée avec succès.' };
     } catch (error) {

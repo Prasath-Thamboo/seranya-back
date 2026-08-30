@@ -74,7 +74,10 @@ export class AuthService {
 
     let user;
     try {
-      user = await this.prisma.user.create({ data: userData, select: SAFE_USER_SELECT });
+      user = await this.prisma.user.create({
+        data: userData,
+        select: SAFE_USER_SELECT,
+      });
     } catch (error) {
       if (error.code === 'P2002') {
         const field = error.meta?.target?.[0] ?? 'email';
@@ -97,7 +100,9 @@ export class AuthService {
         `/admin/users/${user.id}`,
       );
     } catch (error) {
-      Logger.warn(`Notification NEW_USER non créée pour ${user.email}: ${error.message}`);
+      Logger.warn(
+        `Notification NEW_USER non créée pour ${user.email}: ${error.message}`,
+      );
     }
 
     // L'envoi de l'email est isolé de la création du compte : une panne du
@@ -107,8 +112,13 @@ export class AuthService {
     const confirmationUrl = `${baseUrl}/auth/confirm?token=${confirmationToken}`;
     let emailSent = true;
     try {
-      await this.mailerService.sendConfirmationEmail(user.email, confirmationUrl);
-      Logger.log(`Utilisateur créé, email de confirmation envoyé à: ${user.email}`);
+      await this.mailerService.sendConfirmationEmail(
+        user.email,
+        confirmationUrl,
+      );
+      Logger.log(
+        `Utilisateur créé, email de confirmation envoyé à: ${user.email}`,
+      );
     } catch (error) {
       emailSent = false;
       Logger.error(
@@ -230,7 +240,9 @@ export class AuthService {
 
     if (!user) {
       // Ne pas révéler si l'email est enregistré ou non (anti-énumération de comptes).
-      Logger.warn(`Demande de réinitialisation pour un email inconnu: ${email}`);
+      Logger.warn(
+        `Demande de réinitialisation pour un email inconnu: ${email}`,
+      );
       return;
     }
 

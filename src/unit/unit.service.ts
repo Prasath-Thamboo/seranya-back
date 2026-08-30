@@ -415,7 +415,9 @@ export class UnitService {
           ...(updateUnitDto.story && {
             story: sanitizeRichText(updateUnitDto.story),
           }),
-          ...(updateUnitDto.bio && { bio: sanitizeRichText(updateUnitDto.bio) }),
+          ...(updateUnitDto.bio && {
+            bio: sanitizeRichText(updateUnitDto.bio),
+          }),
           ...(updateUnitDto.quote !== undefined && {
             quote: updateUnitDto.quote,
           }),
@@ -551,5 +553,4 @@ export class UnitService {
       });
     }
   }
-
 }

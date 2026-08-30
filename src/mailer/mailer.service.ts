@@ -78,7 +78,10 @@ export class MailerService {
     );
 
     try {
-      await this.notificationService.create('CONTACT', `Nouveau message de contact : ${subject}`);
+      await this.notificationService.create(
+        'CONTACT',
+        `Nouveau message de contact : ${subject}`,
+      );
     } catch (error) {
       Logger.warn(`Notification CONTACT non créée: ${error.message}`);
     }

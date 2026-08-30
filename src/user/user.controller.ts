@@ -39,7 +39,10 @@ export class UserController {
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('ADMIN')
   @ApiOperation({ summary: 'Create a new user' })
-  @ApiResponse({ status: 201, description: 'The user has been successfully created.' })
+  @ApiResponse({
+    status: 201,
+    description: 'The user has been successfully created.',
+  })
   @ApiBody({ type: CreateUserDto })
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
@@ -89,7 +92,9 @@ export class UserController {
   @ApiOperation({ summary: 'Update own profile (any authenticated user)' })
   @ApiConsumes('multipart/form-data')
   @ApiResponse({ status: 200, description: 'Profile updated.' })
-  @UseInterceptors(FileInterceptor('profileImage', { storage: memoryStorage() }))
+  @UseInterceptors(
+    FileInterceptor('profileImage', { storage: memoryStorage() }),
+  )
   async updateMe(
     @Req() req: Request & { user: { id: number } },
     @Body() body: { name?: string; lastName?: string; pseudo?: string },
@@ -100,23 +105,36 @@ export class UserController {
     if (pseudo) {
       const format = this.userService.validatePseudoFormat(pseudo);
       if (!format.valid) throw new BadRequestException(format.reason);
-      const { available } = await this.userService.isPseudoAvailable(pseudo, req.user.id);
-      if (!available) throw new BadRequestException('Ce pseudo est déjà utilisé.');
+      const { available } = await this.userService.isPseudoAvailable(
+        pseudo,
+        req.user.id,
+      );
+      if (!available)
+        throw new BadRequestException('Ce pseudo est déjà utilisé.');
     }
 
-    return this.userService.update(req.user.id, { name, lastName, pseudo }, profileImage);
+    return this.userService.update(
+      req.user.id,
+      { name, lastName, pseudo },
+      profileImage,
+    );
   }
 
   @Post('me/change-email')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Request an email change (sends a confirmation link to the new address)' })
+  @ApiOperation({
+    summary:
+      'Request an email change (sends a confirmation link to the new address)',
+  })
   async requestEmailChange(
     @Req() req: Request & { user: { id: number } },
     @Body('newEmail') newEmail: string,
   ) {
     if (!newEmail) throw new BadRequestException('Adresse email manquante.');
     await this.userService.requestEmailChange(req.user.id, newEmail);
-    return { message: 'Un email de confirmation a été envoyé à la nouvelle adresse.' };
+    return {
+      message: 'Un email de confirmation a été envoyé à la nouvelle adresse.',
+    };
   }
 
   @Put(':id')
@@ -124,10 +142,15 @@ export class UserController {
   @Roles('ADMIN')
   @ApiOperation({ summary: 'Update a user' })
   @ApiConsumes('multipart/form-data')
-  @ApiResponse({ status: 200, description: 'The user has been successfully updated.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The user has been successfully updated.',
+  })
   @ApiResponse({ status: 404, description: 'User not found.' })
   @ApiBody({ type: UpdateUserDto })
-  @UseInterceptors(FileInterceptor('profileImage', { storage: memoryStorage() }))
+  @UseInterceptors(
+    FileInterceptor('profileImage', { storage: memoryStorage() }),
+  )
   async update(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
@@ -140,7 +163,10 @@ export class UserController {
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('ADMIN')
   @ApiOperation({ summary: 'Delete a user' })
-  @ApiResponse({ status: 200, description: 'The user has been successfully deleted.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The user has been successfully deleted.',
+  })
   @ApiResponse({ status: 404, description: 'User not found.' })
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);
@@ -150,9 +176,13 @@ export class UserController {
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('ADMIN')
   @ApiOperation({ summary: 'Send a simple email' })
-  @ApiResponse({ status: 200, description: 'Email has been successfully sent.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Email has been successfully sent.',
+  })
   async sendEmail(
-    @Body() { to, subject, text }: { to: string; subject: string; text: string },
+    @Body()
+    { to, subject, text }: { to: string; subject: string; text: string },
   ) {
     await this.userService.send(to, subject, text);
     return { message: 'Email has been successfully sent.' };

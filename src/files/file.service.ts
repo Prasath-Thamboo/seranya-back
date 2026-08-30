@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
 import { Readable } from 'stream';
 import { PrismaService } from '../prisma/prisma.service';
@@ -16,14 +20,21 @@ export class FileService {
     });
   }
 
-  async uploadImage(file: Express.Multer.File, folder: string): Promise<string> {
+  async uploadImage(
+    file: Express.Multer.File,
+    folder: string,
+  ): Promise<string> {
     return new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         { folder, resource_type: 'image' },
         (error, result: UploadApiResponse) => {
           if (error || !result) {
             this.logger.error('Erreur upload Cloudinary', error);
-            return reject(new InternalServerErrorException("Erreur lors de l'upload vers Cloudinary"));
+            return reject(
+              new InternalServerErrorException(
+                "Erreur lors de l'upload vers Cloudinary",
+              ),
+            );
           }
           resolve(result.secure_url);
         },
@@ -32,7 +43,10 @@ export class FileService {
     });
   }
 
-  async uploadProfileImage(file: Express.Multer.File, userId: number): Promise<string> {
+  async uploadProfileImage(
+    file: Express.Multer.File,
+    userId: number,
+  ): Promise<string> {
     const publicId = `users/${userId}/profileImage`;
     return new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
@@ -40,7 +54,11 @@ export class FileService {
         (error, result: UploadApiResponse) => {
           if (error || !result) {
             this.logger.error('Erreur upload profil Cloudinary', error);
-            return reject(new InternalServerErrorException("Erreur lors de l'upload de l'image de profil"));
+            return reject(
+              new InternalServerErrorException(
+                "Erreur lors de l'upload de l'image de profil",
+              ),
+            );
           }
           resolve(result.secure_url);
         },
@@ -57,7 +75,9 @@ export class FileService {
       this.logger.log(`Image supprimée : ${publicId}`);
     } catch (error) {
       this.logger.error('Erreur suppression Cloudinary', error);
-      throw new InternalServerErrorException("Erreur lors de la suppression de l'image");
+      throw new InternalServerErrorException(
+        "Erreur lors de la suppression de l'image",
+      );
     }
   }
 

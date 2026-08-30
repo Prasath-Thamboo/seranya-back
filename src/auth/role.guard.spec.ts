@@ -29,17 +29,23 @@ describe('RoleGuard', () => {
   it('throws when the route requires roles but there is no authenticated user', () => {
     jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['ADMIN']);
 
-    expect(() => guard.canActivate(buildContext(undefined))).toThrow(UnauthorizedException);
+    expect(() => guard.canActivate(buildContext(undefined))).toThrow(
+      UnauthorizedException,
+    );
   });
 
   it('throws when the user role is not among the required roles', () => {
     jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['ADMIN']);
 
-    expect(() => guard.canActivate(buildContext({ role: 'EDITOR' }))).toThrow(UnauthorizedException);
+    expect(() => guard.canActivate(buildContext({ role: 'EDITOR' }))).toThrow(
+      UnauthorizedException,
+    );
   });
 
   it('allows access when the user role is among the required roles', () => {
-    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['ADMIN', 'EDITOR']);
+    jest
+      .spyOn(reflector, 'getAllAndOverride')
+      .mockReturnValue(['ADMIN', 'EDITOR']);
 
     expect(guard.canActivate(buildContext({ role: 'EDITOR' }))).toBe(true);
   });

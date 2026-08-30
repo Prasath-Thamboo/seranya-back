@@ -8,7 +8,8 @@ export const gdprAcknowledgementTemplate = (
 ): string =>
   renderEmailLayout({
     title: 'Demande RGPD bien reçue',
-    preheader: 'Nous avons bien reçu votre demande concernant vos données personnelles.',
+    preheader:
+      'Nous avons bien reçu votre demande concernant vos données personnelles.',
     bodyHtml: `
       ${emailParagraph(`Bonjour ${name},`)}
       ${emailParagraph(

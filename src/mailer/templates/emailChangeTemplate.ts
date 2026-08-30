@@ -1,11 +1,17 @@
 // backend/src/mailer/templates/emailChangeTemplate.ts
 
-import { renderEmailLayout, emailParagraph, emailNote, emailButton } from './baseTemplate';
+import {
+  renderEmailLayout,
+  emailParagraph,
+  emailNote,
+  emailButton,
+} from './baseTemplate';
 
 export const emailChangeTemplate = (confirmUrl: string): string =>
   renderEmailLayout({
     title: 'Confirmez votre nouvelle adresse email',
-    preheader: 'Confirmez le changement d’adresse email de votre compte Seranya.',
+    preheader:
+      'Confirmez le changement d’adresse email de votre compte Seranya.',
     bodyHtml: `
       ${emailParagraph('Bonjour,')}
       ${emailParagraph(

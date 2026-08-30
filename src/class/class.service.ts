@@ -494,5 +494,4 @@ export class ClassService {
       });
     }
   }
-
 }

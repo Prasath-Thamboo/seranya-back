@@ -1,6 +1,11 @@
 // backend/src/mailer/templates/passwordResetTemplate.ts
 
-import { renderEmailLayout, emailParagraph, emailNote, emailButton } from './baseTemplate';
+import {
+  renderEmailLayout,
+  emailParagraph,
+  emailNote,
+  emailButton,
+} from './baseTemplate';
 
 export const passwordResetTemplate = (resetUrl: string): string =>
   renderEmailLayout({
@@ -9,7 +14,7 @@ export const passwordResetTemplate = (resetUrl: string): string =>
     bodyHtml: `
       ${emailParagraph('Bonjour,')}
       ${emailParagraph(
-        "Vous avez demandé à réinitialiser le mot de passe de votre compte Seranya. Cliquez sur le bouton ci-dessous pour définir un nouveau mot de passe.",
+        'Vous avez demandé à réinitialiser le mot de passe de votre compte Seranya. Cliquez sur le bouton ci-dessous pour définir un nouveau mot de passe.',
       )}
       ${emailButton(resetUrl, 'Réinitialiser mon mot de passe')}
       ${emailNote(

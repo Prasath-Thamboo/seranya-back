@@ -62,10 +62,16 @@ export class UserService {
   }
 
   async findOne(id: number) {
-    return this.prisma.user.findUnique({ where: { id }, select: SAFE_USER_SELECT });
+    return this.prisma.user.findUnique({
+      where: { id },
+      select: SAFE_USER_SELECT,
+    });
   }
 
-  async isPseudoAvailable(pseudo: string, currentUserId: number): Promise<{ available: boolean }> {
+  async isPseudoAvailable(
+    pseudo: string,
+    currentUserId: number,
+  ): Promise<{ available: boolean }> {
     const existing = await this.prisma.user.findFirst({
       where: {
         pseudo: { equals: pseudo, mode: 'insensitive' },
@@ -76,22 +82,78 @@ export class UserService {
   }
 
   validatePseudoFormat(pseudo: string): { valid: boolean; reason?: string } {
-    if (pseudo.length < 3)  return { valid: false, reason: 'Minimum 3 caractères.' };
-    if (pseudo.length > 20) return { valid: false, reason: 'Maximum 20 caractères.' };
-    if (!/^[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]$/.test(pseudo) && pseudo.length > 1) {
-      return { valid: false, reason: 'Commence et finit par une lettre ou un chiffre. Seuls _ et - sont autorisés au milieu.' };
+    if (pseudo.length < 3)
+      return { valid: false, reason: 'Minimum 3 caractères.' };
+    if (pseudo.length > 20)
+      return { valid: false, reason: 'Maximum 20 caractères.' };
+    if (
+      !/^[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]$/.test(pseudo) &&
+      pseudo.length > 1
+    ) {
+      return {
+        valid: false,
+        reason:
+          'Commence et finit par une lettre ou un chiffre. Seuls _ et - sont autorisés au milieu.',
+      };
     }
-    if (/__|--/.test(pseudo)) return { valid: false, reason: 'Pas de caractères spéciaux consécutifs.' };
+    if (/__|--/.test(pseudo))
+      return {
+        valid: false,
+        reason: 'Pas de caractères spéciaux consécutifs.',
+      };
 
-    const normalized = pseudo.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const normalized = pseudo
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '');
     const blocked = [
-      'connard','connasse','salope','pute','putain','enculé','encule','batard','bâtard',
-      'fdp','niquer','nique','pedé','pede','pedale','pedalo','fiotte','tapette','gouine',
-      'sexe','porno','porn','bite','couille','chatte','penis','hitler','nazi','negre',
-      'fuck','shit','bitch','whore','slut','nigger','faggot','cunt','asshole',
+      'connard',
+      'connasse',
+      'salope',
+      'pute',
+      'putain',
+      'enculé',
+      'encule',
+      'batard',
+      'bâtard',
+      'fdp',
+      'niquer',
+      'nique',
+      'pedé',
+      'pede',
+      'pedale',
+      'pedalo',
+      'fiotte',
+      'tapette',
+      'gouine',
+      'sexe',
+      'porno',
+      'porn',
+      'bite',
+      'couille',
+      'chatte',
+      'penis',
+      'hitler',
+      'nazi',
+      'negre',
+      'fuck',
+      'shit',
+      'bitch',
+      'whore',
+      'slut',
+      'nigger',
+      'faggot',
+      'cunt',
+      'asshole',
     ];
-    const found = blocked.find((w) => normalized.includes(w.normalize('NFD').replace(/[̀-ͯ]/g, '')));
-    if (found) return { valid: false, reason: 'Ce pseudo contient un terme non autorisé.' };
+    const found = blocked.find((w) =>
+      normalized.includes(w.normalize('NFD').replace(/[̀-ͯ]/g, '')),
+    );
+    if (found)
+      return {
+        valid: false,
+        reason: 'Ce pseudo contient un terme non autorisé.',
+      };
 
     return { valid: true };
   }
@@ -108,7 +170,10 @@ export class UserService {
     let profileImageUrl: string | undefined;
 
     if (profileImage) {
-      profileImageUrl = await this.fileService.uploadProfileImage(profileImage, id);
+      profileImageUrl = await this.fileService.uploadProfileImage(
+        profileImage,
+        id,
+      );
     }
 
     // Un EDITOR n'a ce rôle que via un abonnement (voir webhook.controller.ts) :
@@ -131,7 +196,9 @@ export class UserService {
       where: { id },
       data: {
         ...restUserDto,
-        ...(coercedIsSubscribed !== undefined && { isSubscribed: coercedIsSubscribed }),
+        ...(coercedIsSubscribed !== undefined && {
+          isSubscribed: coercedIsSubscribed,
+        }),
         ...(profileImageUrl && { profileImage: profileImageUrl }),
         ...demotionOverride,
       },
@@ -144,14 +211,18 @@ export class UserService {
   }
 
   async requestEmailChange(userId: number, newEmail: string): Promise<void> {
-    const current = await this.prisma.user.findUnique({ where: { id: userId } });
+    const current = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
     if (!current) throw new Error('User not found');
 
     if (newEmail === current.email) {
-      throw new BadRequestException('C\'est déjà votre adresse email actuelle.');
+      throw new BadRequestException("C'est déjà votre adresse email actuelle.");
     }
 
-    const existing = await this.prisma.user.findUnique({ where: { email: newEmail } });
+    const existing = await this.prisma.user.findUnique({
+      where: { email: newEmail },
+    });
     if (existing) throw new ConflictException('Cet email est déjà utilisé.');
 
     const emailChangeToken = uuidv4();
@@ -168,7 +239,11 @@ export class UserService {
 
     await this.prisma.user.update({
       where: { id: userId },
-      data: { pendingEmail: newEmail, emailChangeToken, emailChangeTokenExpiry },
+      data: {
+        pendingEmail: newEmail,
+        emailChangeToken,
+        emailChangeTokenExpiry,
+      },
     });
   }
 

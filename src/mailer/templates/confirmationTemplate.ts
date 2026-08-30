@@ -1,6 +1,11 @@
 // backend/src/mailer/templates/confirmationTemplate.ts
 
-import { renderEmailLayout, emailParagraph, emailNote, emailButton } from './baseTemplate';
+import {
+  renderEmailLayout,
+  emailParagraph,
+  emailNote,
+  emailButton,
+} from './baseTemplate';
 
 export const confirmationTemplate = (confirmationUrl: string): string =>
   renderEmailLayout({
@@ -9,7 +14,7 @@ export const confirmationTemplate = (confirmationUrl: string): string =>
     bodyHtml: `
       ${emailParagraph('Bonjour,')}
       ${emailParagraph(
-        "Merci de votre inscription sur Seranya. Pour activer votre compte, veuillez confirmer votre adresse email en cliquant sur le bouton ci-dessous.",
+        'Merci de votre inscription sur Seranya. Pour activer votre compte, veuillez confirmer votre adresse email en cliquant sur le bouton ci-dessous.',
       )}
       ${emailButton(confirmationUrl, 'Confirmer mon inscription')}
       ${emailNote(

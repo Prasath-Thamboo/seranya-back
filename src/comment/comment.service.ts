@@ -25,7 +25,9 @@ export class CommentService {
         tutorialId: dto.tutorialId ?? null,
       },
       include: {
-        user: { select: { id: true, pseudo: true, profileImage: true, role: true } },
+        user: {
+          select: { id: true, pseudo: true, profileImage: true, role: true },
+        },
         post: { select: { title: true } },
         unit: { select: { title: true } },
         class: { select: { title: true } },
@@ -34,7 +36,10 @@ export class CommentService {
     });
 
     const resourceTitle =
-      comment.post?.title ?? comment.unit?.title ?? comment.class?.title ?? comment.tutorial?.title;
+      comment.post?.title ??
+      comment.unit?.title ??
+      comment.class?.title ??
+      comment.tutorial?.title;
     await this.notificationService.create(
       'COMMENT',
       resourceTitle
@@ -60,7 +65,9 @@ export class CommentService {
         ...(tutorialId ? { tutorialId } : {}),
       },
       include: {
-        user: { select: { id: true, pseudo: true, profileImage: true, role: true } },
+        user: {
+          select: { id: true, pseudo: true, profileImage: true, role: true },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -79,7 +86,12 @@ export class CommentService {
     });
   }
 
-  async update(id: number, dto: UpdateCommentDto, userId: number, userRole: string) {
+  async update(
+    id: number,
+    dto: UpdateCommentDto,
+    userId: number,
+    userRole: string,
+  ) {
     const comment = await this.prisma.comment.findUnique({ where: { id } });
     if (!comment) throw new NotFoundException('Commentaire introuvable');
     if (comment.userId !== userId && userRole !== 'ADMIN') {
@@ -89,7 +101,9 @@ export class CommentService {
       where: { id },
       data: { content: dto.content },
       include: {
-        user: { select: { id: true, pseudo: true, profileImage: true, role: true } },
+        user: {
+          select: { id: true, pseudo: true, profileImage: true, role: true },
+        },
       },
     });
   }

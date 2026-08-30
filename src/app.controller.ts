@@ -22,7 +22,8 @@ export class AppController {
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('ADMIN', 'EDITOR')
   async search(@Query('q') q: string) {
-    if (!q || q.trim().length < 2) return { posts: [], tutorials: [], definitions: [], users: [] };
+    if (!q || q.trim().length < 2)
+      return { posts: [], tutorials: [], definitions: [], users: [] };
     return this.appService.search(q.trim());
   }
 }
