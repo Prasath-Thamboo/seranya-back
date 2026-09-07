@@ -6,12 +6,14 @@ import {
   Delete,
   Param,
   Body,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { DefinitionService } from './definition.service';
 import { CreateDefinitionDto, UpdateDefinitionDto } from './dto/definition.dto';
+import { resolveLang } from '../common/i18n.util';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
 import { RoleGuard } from '../auth/role.guard';
@@ -28,8 +30,11 @@ export class DefinitionController {
 
   @Get('published')
   @UseGuards(OptionalJwtAuthGuard)
-  findPublished(@Req() req: Request) {
-    return this.definitionService.findPublished(this.isPrivileged(req));
+  findPublished(@Req() req: Request, @Query('lang') lang?: string) {
+    return this.definitionService.findPublished(
+      this.isPrivileged(req),
+      lang ? resolveLang(lang) : undefined,
+    );
   }
 
   @Get()
@@ -41,8 +46,16 @@ export class DefinitionController {
 
   @Get(':id')
   @UseGuards(OptionalJwtAuthGuard)
-  findOne(@Param('id') id: string, @Req() req: Request) {
-    return this.definitionService.findOne(+id, this.isPrivileged(req));
+  findOne(
+    @Param('id') id: string,
+    @Req() req: Request,
+    @Query('lang') lang?: string,
+  ) {
+    return this.definitionService.findOne(
+      +id,
+      this.isPrivileged(req),
+      lang ? resolveLang(lang) : undefined,
+    );
   }
 
   @Post()

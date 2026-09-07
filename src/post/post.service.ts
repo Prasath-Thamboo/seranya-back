@@ -11,6 +11,7 @@ import { FileService } from '../files/file.service';
 import { sanitizeRichText } from '../common/sanitize-html.util';
 import { publicationFilter } from '../common/publication.util';
 import { toBoolean } from '../common/coerce.util';
+import { Lang, localizePost } from '../common/i18n.util';
 import { URL } from 'url';
 
 @Injectable()
@@ -29,7 +30,7 @@ export class PostService {
   }
 
   // Méthode findAll
-  async findAll(isPrivileged: boolean) {
+  async findAll(isPrivileged: boolean, lang?: Lang) {
     const posts = await this.prisma.post.findMany({
       where: publicationFilter(isPrivileged),
       include: {
@@ -76,12 +77,12 @@ export class PostService {
       post['footerImage'] = footerImageUpload?.path || null;
       post['gallery'] = galleryUploads.map((upload) => upload.path);
 
-      return post;
+      return lang ? localizePost(post, lang) : post;
     });
   }
 
   // Nouvelle Méthode : findAllRegions
-  async findAllRegions(isPrivileged: boolean) {
+  async findAllRegions(isPrivileged: boolean, lang?: Lang) {
     try {
       const regionPosts = await this.prisma.post.findMany({
         where: {
@@ -132,7 +133,7 @@ export class PostService {
         post['footerImage'] = footerImageUpload?.path || null;
         post['gallery'] = galleryUploads.map((upload) => upload.path);
 
-        return post;
+        return lang ? localizePost(post, lang) : post;
       });
     } catch (error) {
       this.handleException(error);
@@ -140,7 +141,7 @@ export class PostService {
   }
 
   // Méthode findOne
-  async findOne(id: number, isPrivileged: boolean) {
+  async findOne(id: number, isPrivileged: boolean, lang?: Lang) {
     const foundPost = await this.prisma.post.findFirst({
       where: { id, ...publicationFilter(isPrivileged) },
       include: {
@@ -190,7 +191,7 @@ export class PostService {
     foundPost['footerImage'] = footerImageUpload?.path || null;
     foundPost['gallery'] = galleryUploads.map((upload) => upload.path);
 
-    return foundPost;
+    return lang ? localizePost(foundPost, lang) : foundPost;
   }
 
   async create(
@@ -207,6 +208,12 @@ export class PostService {
           intro: createPostDto.intro,
           subtitle: createPostDto.subtitle || null,
           content: sanitizeRichText(createPostDto.content),
+          titleEn: createPostDto.titleEn || null,
+          introEn: createPostDto.introEn || null,
+          subtitleEn: createPostDto.subtitleEn || null,
+          contentEn: createPostDto.contentEn
+            ? sanitizeRichText(createPostDto.contentEn)
+            : null,
           color: createPostDto.color || null, // Gestion de la propriété color
           isPublished: toBoolean(createPostDto.isPublished) ?? false,
           publishedAt: createPostDto.publishedAt
@@ -366,6 +373,20 @@ export class PostService {
           ...(updatePostDto.subtitle && { subtitle: updatePostDto.subtitle }),
           ...(updatePostDto.content && {
             content: sanitizeRichText(updatePostDto.content),
+          }),
+          ...(updatePostDto.titleEn !== undefined && {
+            titleEn: updatePostDto.titleEn || null,
+          }),
+          ...(updatePostDto.introEn !== undefined && {
+            introEn: updatePostDto.introEn || null,
+          }),
+          ...(updatePostDto.subtitleEn !== undefined && {
+            subtitleEn: updatePostDto.subtitleEn || null,
+          }),
+          ...(updatePostDto.contentEn !== undefined && {
+            contentEn: updatePostDto.contentEn
+              ? sanitizeRichText(updatePostDto.contentEn)
+              : null,
           }),
           ...(updatePostDto.color !== undefined && {
             color: updatePostDto.color,

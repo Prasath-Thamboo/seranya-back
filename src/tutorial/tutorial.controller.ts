@@ -6,12 +6,14 @@ import {
   Delete,
   Param,
   Body,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { TutorialService } from './tutorial.service';
 import { CreateTutorialDto, UpdateTutorialDto } from './dto/tutorial.dto';
+import { resolveLang } from '../common/i18n.util';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
 import { RoleGuard } from '../auth/role.guard';
@@ -36,10 +38,11 @@ export class TutorialController {
 
   @Get('published')
   @UseGuards(OptionalJwtAuthGuard)
-  findPublished(@Req() req: Request) {
+  findPublished(@Req() req: Request, @Query('lang') lang?: string) {
     return this.tutorialService.findPublished(
       this.isPrivileged(req),
       this.canWatch(req),
+      lang ? resolveLang(lang) : undefined,
     );
   }
 
@@ -52,11 +55,16 @@ export class TutorialController {
 
   @Get(':id')
   @UseGuards(OptionalJwtAuthGuard)
-  findOne(@Param('id') id: string, @Req() req: Request) {
+  findOne(
+    @Param('id') id: string,
+    @Req() req: Request,
+    @Query('lang') lang?: string,
+  ) {
     return this.tutorialService.findOne(
       +id,
       this.isPrivileged(req),
       this.canWatch(req),
+      lang ? resolveLang(lang) : undefined,
     );
   }
 

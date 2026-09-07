@@ -6,6 +6,7 @@ import {
   Param,
   Delete,
   Body,
+  Query,
   UseGuards,
   UseInterceptors,
   UploadedFiles,
@@ -14,6 +15,7 @@ import {
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto, UpdatePostDto } from './dto/post.dto';
+import { resolveLang } from '../common/i18n.util';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
 import { RoleGuard } from '../auth/role.guard';
@@ -39,22 +41,36 @@ export class PostController {
 
   @Get()
   @UseGuards(OptionalJwtAuthGuard)
-  findAll(@Req() req: Request) {
-    return this.postService.findAll(this.isPrivileged(req));
+  findAll(@Req() req: Request, @Query('lang') lang?: string) {
+    return this.postService.findAll(
+      this.isPrivileged(req),
+      lang ? resolveLang(lang) : undefined,
+    );
   }
 
   // Nouveau Endpoint : GET /posts/regions
   // Doit être déclaré avant ':id' pour ne pas être intercepté par la route dynamique.
   @Get('regions')
   @UseGuards(OptionalJwtAuthGuard)
-  findAllRegions(@Req() req: Request) {
-    return this.postService.findAllRegions(this.isPrivileged(req));
+  findAllRegions(@Req() req: Request, @Query('lang') lang?: string) {
+    return this.postService.findAllRegions(
+      this.isPrivileged(req),
+      lang ? resolveLang(lang) : undefined,
+    );
   }
 
   @Get(':id')
   @UseGuards(OptionalJwtAuthGuard)
-  findOne(@Param('id') id: string, @Req() req: Request) {
-    return this.postService.findOne(+id, this.isPrivileged(req));
+  findOne(
+    @Param('id') id: string,
+    @Req() req: Request,
+    @Query('lang') lang?: string,
+  ) {
+    return this.postService.findOne(
+      +id,
+      this.isPrivileged(req),
+      lang ? resolveLang(lang) : undefined,
+    );
   }
 
   @Post()

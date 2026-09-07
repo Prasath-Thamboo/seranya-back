@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTutorialDto, UpdateTutorialDto } from './dto/tutorial.dto';
 import { publicationFilter } from '../common/publication.util';
+import { Lang, localizeTutorial } from '../common/i18n.util';
 
 // Même extraction que côté frontend (UniversClient/TutorielsClient) : on ne
 // garde que l'ID de la vidéo pour fabriquer une miniature, jamais l'URL
@@ -34,16 +35,24 @@ export class TutorialService {
     return this.prisma.tutorial.findMany({ orderBy: { createdAt: 'desc' } });
   }
 
-  async findPublished(isPrivileged: boolean, canWatch: boolean) {
+  async findPublished(isPrivileged: boolean, canWatch: boolean, lang?: Lang) {
     const tutorials = await this.prisma.tutorial.findMany({
       where: publicationFilter(isPrivileged),
       orderBy: { createdAt: 'desc' },
     });
 
-    return tutorials.map((tutorial) => withAccessControl(tutorial, canWatch));
+    return tutorials.map((tutorial) => {
+      const localized = lang ? localizeTutorial(tutorial, lang) : tutorial;
+      return withAccessControl(localized, canWatch);
+    });
   }
 
-  async findOne(id: number, isPrivileged: boolean, canWatch: boolean) {
+  async findOne(
+    id: number,
+    isPrivileged: boolean,
+    canWatch: boolean,
+    lang?: Lang,
+  ) {
     const tutorial = await this.prisma.tutorial.findFirst({
       where: { id, ...publicationFilter(isPrivileged) },
     });
@@ -52,7 +61,10 @@ export class TutorialService {
       throw new NotFoundException('Tutorial not found');
     }
 
-    return withAccessControl(tutorial, canWatch);
+    return withAccessControl(
+      lang ? localizeTutorial(tutorial, lang) : tutorial,
+      canWatch,
+    );
   }
 
   create(dto: CreateTutorialDto) {

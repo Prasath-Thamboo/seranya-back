@@ -1,10 +1,18 @@
-import { IsOptional, IsDateString } from 'class-validator';
+import { IsOptional, IsDateString, IsString } from 'class-validator';
 
 export class CreateTutorialDto {
   title: string;
   description?: string;
   videoUrl: string;
   isPublished?: boolean;
+
+  @IsOptional()
+  @IsString()
+  titleEn?: string;
+
+  @IsOptional()
+  @IsString()
+  descriptionEn?: string;
 
   @IsOptional()
   @IsDateString()
@@ -16,6 +24,14 @@ export class UpdateTutorialDto {
   description?: string;
   videoUrl?: string;
   isPublished?: boolean;
+
+  @IsOptional()
+  @IsString()
+  titleEn?: string;
+
+  @IsOptional()
+  @IsString()
+  descriptionEn?: string;
 
   @IsOptional()
   @IsDateString()

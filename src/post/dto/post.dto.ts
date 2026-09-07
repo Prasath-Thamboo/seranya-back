@@ -45,6 +45,27 @@ export class CreatePostDto {
   @ApiProperty({ required: false })
   content?: string;
 
+  // Champs miroir EN (bilinguisme FR/EN). Envoyés en multipart comme les autres.
+  @IsString()
+  @IsOptional()
+  @ApiProperty({ required: false })
+  titleEn?: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({ required: false })
+  introEn?: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({ required: false })
+  subtitleEn?: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({ required: false })
+  contentEn?: string;
+
   // multipart/form-data always sends "true"/"false" as strings — coerce before validating.
   @Transform(({ value }) => toBoolean(value))
   @IsBoolean()

@@ -17,24 +17,25 @@ describe('DefinitionController', () => {
   });
 
   describe('privilege detection', () => {
+    // Le dernier argument (lang résolu depuis ?lang) est undefined sans query.
     it('treats ADMIN and EDITOR as privileged', () => {
       controller.findPublished({ user: { role: 'ADMIN' } } as any);
       controller.findPublished({ user: { role: 'EDITOR' } } as any);
-      expect(service.findPublished).toHaveBeenNthCalledWith(1, true);
-      expect(service.findPublished).toHaveBeenNthCalledWith(2, true);
+      expect(service.findPublished).toHaveBeenNthCalledWith(1, true, undefined);
+      expect(service.findPublished).toHaveBeenNthCalledWith(2, true, undefined);
     });
 
     it('treats USER and anonymous requests as unprivileged', () => {
       controller.findPublished({ user: { role: 'USER' } } as any);
       controller.findPublished({} as any);
-      expect(service.findPublished).toHaveBeenNthCalledWith(1, false);
-      expect(service.findPublished).toHaveBeenNthCalledWith(2, false);
+      expect(service.findPublished).toHaveBeenNthCalledWith(1, false, undefined);
+      expect(service.findPublished).toHaveBeenNthCalledWith(2, false, undefined);
     });
   });
 
   it('coerces the id and forwards the privilege flag to findOne', () => {
     controller.findOne('15', { user: { role: 'USER' } } as any);
-    expect(service.findOne).toHaveBeenCalledWith(15, false);
+    expect(service.findOne).toHaveBeenCalledWith(15, false, undefined);
   });
 
   it('delegates create / update / remove with a coerced id', () => {
