@@ -19,13 +19,14 @@ describe('PostController', () => {
   it('passes the privilege flag to findAll / findAllRegions', () => {
     controller.findAll({ user: { role: 'ADMIN' } } as any);
     controller.findAllRegions({} as any);
-    expect(service.findAll).toHaveBeenCalledWith(true);
-    expect(service.findAllRegions).toHaveBeenCalledWith(false);
+    // Le 3e argument (lang résolu depuis ?lang) est undefined sans query.
+    expect(service.findAll).toHaveBeenCalledWith(true, undefined);
+    expect(service.findAllRegions).toHaveBeenCalledWith(false, undefined);
   });
 
   it('coerces the id and forwards the privilege flag to findOne', () => {
     controller.findOne('7', { user: { role: 'EDITOR' } } as any);
-    expect(service.findOne).toHaveBeenCalledWith(7, true);
+    expect(service.findOne).toHaveBeenCalledWith(7, true, undefined);
   });
 
   it('normalises scalar unitIds / classIds / galleryImagesToDelete into arrays on update', async () => {

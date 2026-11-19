@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateDefinitionDto, UpdateDefinitionDto } from './dto/definition.dto';
 import { publicationFilter } from '../common/publication.util';
+import { Lang, localizeDefinition } from '../common/i18n.util';
 
 @Injectable()
 export class DefinitionService {
@@ -11,14 +12,18 @@ export class DefinitionService {
     return this.prisma.definition.findMany({ orderBy: { term: 'asc' } });
   }
 
-  findPublished(isPrivileged: boolean) {
-    return this.prisma.definition.findMany({
+  async findPublished(isPrivileged: boolean, lang?: Lang) {
+    const definitions = await this.prisma.definition.findMany({
       where: publicationFilter(isPrivileged),
       orderBy: { term: 'asc' },
     });
+
+    return lang
+      ? definitions.map((d) => localizeDefinition(d, lang))
+      : definitions;
   }
 
-  async findOne(id: number, isPrivileged: boolean) {
+  async findOne(id: number, isPrivileged: boolean, lang?: Lang) {
     const definition = await this.prisma.definition.findFirst({
       where: { id, ...publicationFilter(isPrivileged) },
     });
@@ -27,7 +32,7 @@ export class DefinitionService {
       throw new NotFoundException('Definition not found');
     }
 
-    return definition;
+    return lang ? localizeDefinition(definition, lang) : definition;
   }
 
   create(dto: CreateDefinitionDto) {

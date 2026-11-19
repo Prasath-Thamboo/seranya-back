@@ -17,28 +17,41 @@ describe('TutorialController', () => {
   });
 
   describe('isPrivileged / canWatch flags passed to findPublished', () => {
+    // Le dernier argument (lang résolu depuis ?lang) est undefined sans query.
     it('privileged (EDITOR) → both flags true', () => {
       controller.findPublished({ user: { role: 'EDITOR' } } as any);
-      expect(service.findPublished).toHaveBeenCalledWith(true, true);
+      expect(service.findPublished).toHaveBeenCalledWith(true, true, undefined);
     });
 
     it('subscribed USER → not privileged but can watch', () => {
       controller.findPublished({
         user: { role: 'USER', isSubscribed: true },
       } as any);
-      expect(service.findPublished).toHaveBeenCalledWith(false, true);
+      expect(service.findPublished).toHaveBeenCalledWith(
+        false,
+        true,
+        undefined,
+      );
     });
 
     it('plain USER → not privileged, cannot watch', () => {
       controller.findPublished({
         user: { role: 'USER', isSubscribed: false },
       } as any);
-      expect(service.findPublished).toHaveBeenCalledWith(false, false);
+      expect(service.findPublished).toHaveBeenCalledWith(
+        false,
+        false,
+        undefined,
+      );
     });
 
     it('anonymous → not privileged, cannot watch', () => {
       controller.findPublished({} as any);
-      expect(service.findPublished).toHaveBeenCalledWith(false, false);
+      expect(service.findPublished).toHaveBeenCalledWith(
+        false,
+        false,
+        undefined,
+      );
     });
   });
 
@@ -46,7 +59,7 @@ describe('TutorialController', () => {
     controller.findOne('9', {
       user: { role: 'USER', isSubscribed: true },
     } as any);
-    expect(service.findOne).toHaveBeenCalledWith(9, false, true);
+    expect(service.findOne).toHaveBeenCalledWith(9, false, true, undefined);
   });
 
   it('delegates create / update / remove with a coerced id', () => {
