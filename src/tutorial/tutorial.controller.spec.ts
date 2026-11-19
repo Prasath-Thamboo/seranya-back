@@ -27,19 +27,31 @@ describe('TutorialController', () => {
       controller.findPublished({
         user: { role: 'USER', isSubscribed: true },
       } as any);
-      expect(service.findPublished).toHaveBeenCalledWith(false, true, undefined);
+      expect(service.findPublished).toHaveBeenCalledWith(
+        false,
+        true,
+        undefined,
+      );
     });
 
     it('plain USER → not privileged, cannot watch', () => {
       controller.findPublished({
         user: { role: 'USER', isSubscribed: false },
       } as any);
-      expect(service.findPublished).toHaveBeenCalledWith(false, false, undefined);
+      expect(service.findPublished).toHaveBeenCalledWith(
+        false,
+        false,
+        undefined,
+      );
     });
 
     it('anonymous → not privileged, cannot watch', () => {
       controller.findPublished({} as any);
-      expect(service.findPublished).toHaveBeenCalledWith(false, false, undefined);
+      expect(service.findPublished).toHaveBeenCalledWith(
+        false,
+        false,
+        undefined,
+      );
     });
   });
 

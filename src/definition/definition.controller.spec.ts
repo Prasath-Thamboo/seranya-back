@@ -28,8 +28,16 @@ describe('DefinitionController', () => {
     it('treats USER and anonymous requests as unprivileged', () => {
       controller.findPublished({ user: { role: 'USER' } } as any);
       controller.findPublished({} as any);
-      expect(service.findPublished).toHaveBeenNthCalledWith(1, false, undefined);
-      expect(service.findPublished).toHaveBeenNthCalledWith(2, false, undefined);
+      expect(service.findPublished).toHaveBeenNthCalledWith(
+        1,
+        false,
+        undefined,
+      );
+      expect(service.findPublished).toHaveBeenNthCalledWith(
+        2,
+        false,
+        undefined,
+      );
     });
   });
 

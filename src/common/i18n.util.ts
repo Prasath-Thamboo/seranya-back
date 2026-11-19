@@ -29,7 +29,11 @@ function localizeRow<T extends Record<string, any>>(
   for (const [base, en] of pairs) {
     if (lang === 'en') {
       const translated = out[en];
-      if (translated !== null && translated !== undefined && translated !== '') {
+      if (
+        translated !== null &&
+        translated !== undefined &&
+        translated !== ''
+      ) {
         out[base] = translated;
       }
     }
@@ -59,8 +63,10 @@ const DEFINITION_FIELDS: FieldPair[] = [
   ['definition', 'definitionEn'],
 ];
 
-export const localizePost = <T extends Record<string, any>>(row: T, lang: Lang) =>
-  localizeRow(row, POST_FIELDS, lang);
+export const localizePost = <T extends Record<string, any>>(
+  row: T,
+  lang: Lang,
+) => localizeRow(row, POST_FIELDS, lang);
 
 export const localizeTutorial = <T extends Record<string, any>>(
   row: T,
